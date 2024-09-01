@@ -13,7 +13,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/attaswift/BigInt", .upToNextMajor(from: "5.0.0")),
-        .package(url: "https://github.com/sunimp/tweetnacl-swiftwrap", .upToNextMajor(from: "1.1.0")),
+        .package(url: "https://github.com/sunimp/tweetnacl-swiftwrap", .upToNextMajor(from: "1.2.0")),
         .package(url: "https://github.com/nicklockwood/SwiftFormat.git", from: "0.54.0"),
     ],
     targets: [
