@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A4625CF82C841CD20062F4CB /* TonSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A4625CF72C841CD20062F4CB /* TonSwift */; };
 		C4F719F129B78310007DA420 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4F719F029B78310007DA420 /* AppDelegate.swift */; };
 		C4F719F329B78310007DA420 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4F719F229B78310007DA420 /* SceneDelegate.swift */; };
 		C4F719F529B78310007DA420 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4F719F429B78310007DA420 /* ViewController.swift */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A4625CF52C841CBD0062F4CB /* ton-swift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "ton-swift"; path = ..; sourceTree = "<group>"; };
 		C4F719ED29B78310007DA420 /* ton-swift-example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ton-swift-example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4F719F029B78310007DA420 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C4F719F229B78310007DA420 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -31,17 +33,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4625CF82C841CD20062F4CB /* TonSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A4625CF62C841CD20062F4CB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C4F719E429B78310007DA420 = {
 			isa = PBXGroup;
 			children = (
+				A4625CF52C841CBD0062F4CB /* ton-swift */,
 				C4F719EF29B78310007DA420 /* ton-swift-example */,
 				C4F719EE29B78310007DA420 /* Products */,
+				A4625CF62C841CD20062F4CB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -83,6 +95,9 @@
 			dependencies = (
 			);
 			name = "ton-swift-example";
+			packageProductDependencies = (
+				A4625CF72C841CD20062F4CB /* TonSwift */,
+			);
 			productName = "ton-swift-example";
 			productReference = C4F719ED29B78310007DA420 /* ton-swift-example.app */;
 			productType = "com.apple.product-type.application";
@@ -300,7 +315,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tonkeeper.ton-swift-example";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sunimp.ton-swift-example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -328,7 +343,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tonkeeper.ton-swift-example";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sunimp.ton-swift-example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -358,6 +373,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A4625CF72C841CD20062F4CB /* TonSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TonSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C4F719E529B78310007DA420 /* Project object */;
 }
