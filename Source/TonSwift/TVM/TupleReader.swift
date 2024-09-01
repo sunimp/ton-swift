@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 public class TupleReader {
     private var items: [Tuple]
@@ -9,22 +9,22 @@ public class TupleReader {
     }
     
     public var remaining: Int {
-        return items.count
+        items.count
     }
     
     public func peek() throws -> Tuple {
-        guard items.count > 0 else { throw TonError.custom("EOF") }
+        guard !items.isEmpty else { throw TonError.custom("EOF") }
         return items[0]
     }
     
     @discardableResult
     public func pop() throws -> Tuple {
-        guard items.count > 0 else { throw TonError.custom("EOF") }
+        guard !items.isEmpty else { throw TonError.custom("EOF") }
         return items.remove(at: 0)
     }
     
     public func skip(num: Int = 1) throws -> TupleReader {
-        for _ in 0..<num { try pop() }
+        for _ in 0 ..< num { try pop() }
         return self
     }
     
@@ -51,7 +51,7 @@ public class TupleReader {
     }
     
     public func readNumber() throws -> UInt64 {
-        return UInt64(try readBigNumber())
+        UInt64(try readBigNumber())
     }
     
     public func readNumberOpt() throws -> UInt64? {
@@ -76,7 +76,7 @@ public class TupleReader {
     }
     
     public func readAddress() throws -> Address {
-        return try readCell().beginParse().loadType()
+        try readCell().beginParse().loadType()
     }
     
     public func readAddressOpt() throws -> Address? {

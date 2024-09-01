@@ -1,5 +1,7 @@
-import Foundation
 import BigInt
+import Foundation
+
+// MARK: - BitsMode
 
 public enum BitsMode {
     case int
@@ -30,6 +32,6 @@ extension BigInt {
 
 extension Int {
     public func bitsCount(mode: BitsMode) throws -> Int {
-        return try BigInt(self).bitsCount(mode: mode)
+        try BigInt(self).bitsCount(mode: mode)
     }
 }

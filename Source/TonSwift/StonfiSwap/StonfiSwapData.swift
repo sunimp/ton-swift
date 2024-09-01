@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 public struct StonfiSwapData: CellCodable {
     public let assetToSwap: Address
@@ -35,6 +35,11 @@ public struct StonfiSwapData: CellCodable {
         }
 
                 
-        return StonfiSwapData(assetToSwap: assetToSwap, minAskAmount: minAskAmount, userWalletAddress: userWalletAddress, referralAddress: referralAddress)
+        return StonfiSwapData(
+            assetToSwap: assetToSwap,
+            minAskAmount: minAskAmount,
+            userWalletAddress: userWalletAddress,
+            referralAddress: referralAddress
+        )
     }
 }

@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - SendMode
+
 /// Various raw options for sending a message that affect error handling,
 /// paying fees and sending the value.
 /// This struct is a wrapper around sendmode flags that prevents accidental misuse.
@@ -25,14 +27,16 @@ public struct SendMode {
     /// and ignore errors so that sequence number can be bumped securely,
     /// so that bad transactions cannot be replayed indefinitely.
     public static func walletDefault() -> Self {
-        return SendMode(payMsgFees: true, ignoreErrors: true)
+        SendMode(payMsgFees: true, ignoreErrors: true)
     }
   
     /// Flags to send all available Toncoins
     public static func sendMaxTon() -> Self {
-        return SendMode(payMsgFees: false, ignoreErrors: true, value: .sendRemainingBalance)
+        SendMode(payMsgFees: false, ignoreErrors: true, value: .sendRemainingBalance)
     }
 }
+
+// MARK: RawRepresentable
 
 extension SendMode: RawRepresentable {
     public init?(rawValue: UInt8) {
@@ -40,12 +44,12 @@ extension SendMode: RawRepresentable {
             return nil // these bits are not used and must be set to zero
         }
         if let v = SendValueOptions(rawValue: rawValue) {
-            self.value = v
+            value = v
         } else {
             return nil
         }
-        self.payMsgFees = (rawValue & SendModePayMsgFees > 0)
-        self.ignoreErrors = (rawValue & SendModeIgnoreErrors > 0)
+        payMsgFees = (rawValue & SendModePayMsgFees > 0)
+        ignoreErrors = (rawValue & SendModeIgnoreErrors > 0)
     }
 
     public var rawValue: UInt8 {
@@ -55,6 +59,8 @@ extension SendMode: RawRepresentable {
         return m
     }
 }
+
+// MARK: - SendValueOptions
 
 public enum SendValueOptions {
     /// Default choice: send the value specified for the message (minus the possible fees).
@@ -69,6 +75,8 @@ public enum SendValueOptions {
     /// Spend the entire balance (minus the fees) and destroy the contract.
     case sendRemainingBalanceAndDestroy
 }
+
+// MARK: RawRepresentable
 
 extension SendValueOptions: RawRepresentable {
     public typealias RawValue = UInt8
@@ -92,10 +100,10 @@ extension SendValueOptions: RawRepresentable {
 
     public var rawValue: UInt8 {
         switch self {
-        case .messageValue: return 0
-        case .addInboundValue: return SendModeAddRemainingInboundValue
-        case .sendRemainingBalance: return SendModeSpendRemainingBalance
-        case .sendRemainingBalanceAndDestroy: return SendModeSpendRemainingBalance | SendModeDestroyWhenEmpty
+        case .messageValue: 0
+        case .addInboundValue: SendModeAddRemainingInboundValue
+        case .sendRemainingBalance: SendModeSpendRemainingBalance
+        case .sendRemainingBalanceAndDestroy: SendModeSpendRemainingBalance | SendModeDestroyWhenEmpty
         }
     }
 }
@@ -126,6 +134,6 @@ let SendModeAddRemainingInboundValue: UInt8 = 64
 /// IMPORTANT: do not use this flag directly, use `SendMode` type instead.
 let SendModeSpendRemainingBalance: UInt8 = 128
 
-private let SendModeInvalidFlags: UInt8 = 4+8+16
+private let SendModeInvalidFlags: UInt8 = 4 + 8 + 16
 
-private let SendModeConflictingFlags: UInt8 = 128+64
+private let SendModeConflictingFlags: UInt8 = 128 + 64

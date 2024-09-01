@@ -1,12 +1,10 @@
-import Foundation
 import BigInt
+import Foundation
 
-/*
- Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L151
- message$_ {X:Type} info:CommonMsgInfoRelaxed
-                    init:(Maybe (Either StateInit ^StateInit))
-                    body:(Either X ^X) = MessageRelaxed X;
- */
+// Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L151
+// message$_ {X:Type} info:CommonMsgInfoRelaxed
+//                   init:(Maybe (Either StateInit ^StateInit))
+//                   body:(Either X ^X) = MessageRelaxed X;
 
 public struct MessageRelaxed: CellCodable {
     public let info: CommonMsgInfoRelaxed
@@ -25,12 +23,12 @@ public struct MessageRelaxed: CellCodable {
             }
         }
         
-        var body: Cell
-        if try slice.loadBoolean() {
-            body = try slice.loadRef()
-        } else {
-            body = try slice.loadRemainder()
-        }
+        let body: Cell =
+            if try slice.loadBoolean() {
+                try slice.loadRef()
+            } else {
+                try slice.loadRemainder()
+            }
         
         return MessageRelaxed(info: info, stateInit: stateInit, body: body)
     }
@@ -48,7 +46,7 @@ public struct MessageRelaxed: CellCodable {
                 try builder.store(initCell)
             } else {
                 try builder.store(bit: 1)
-                try builder.store(ref:initCell)
+                try builder.store(ref: initCell)
             }
         } else {
             try builder.store(bit: 0)
@@ -63,34 +61,47 @@ public struct MessageRelaxed: CellCodable {
         }
     }
     
-    public static func `internal`(to: Address, value: BigUInt, bounce: Bool = true, stateInit: StateInit? = nil, body: Cell = .empty) -> MessageRelaxed {
-        return MessageRelaxed(
+    public static func `internal`(
+        to: Address,
+        value: BigUInt,
+        bounce: Bool = true,
+        stateInit: StateInit? = nil,
+        body: Cell = .empty
+    ) -> MessageRelaxed {
+        MessageRelaxed(
             info: .internalInfo(
                 info:
-                    CommonMsgInfoRelaxedInternal(
-                        ihrDisabled: true,
-                        bounce: bounce,
-                        bounced: false,
-                        src: .none,
-                        dest: to,
-                        value: CurrencyCollection(coins: Coins(value)),
-                        ihrFee: Coins(0),
-                        forwardFee: Coins(0),
-                        createdLt: 0,
-                        createdAt: 0
-                    )
+                CommonMsgInfoRelaxedInternal(
+                    ihrDisabled: true,
+                    bounce: bounce,
+                    bounced: false,
+                    src: .none,
+                    dest: to,
+                    value: CurrencyCollection(coins: Coins(value)),
+                    ihrFee: Coins(0),
+                    forwardFee: Coins(0),
+                    createdLt: 0,
+                    createdAt: 0
+                )
             ),
             stateInit: stateInit,
             body: body
         )
     }
-    public static func `internal`(to: Address, value: BigUInt, bounce: Bool = true, stateInit: StateInit? = nil, textPayload: String) throws -> MessageRelaxed {
-        let body: Cell
-        if (textPayload.isEmpty) {
-            body = .empty
-        } else {
-            body = try Builder().store(int: 0, bits: 32).writeSnakeData(Data(textPayload.utf8)).endCell()
-        }
+
+    public static func `internal`(
+        to: Address,
+        value: BigUInt,
+        bounce: Bool = true,
+        stateInit: StateInit? = nil,
+        textPayload: String
+    ) throws -> MessageRelaxed {
+        let body: Cell =
+            if textPayload.isEmpty {
+                .empty
+            } else {
+                try Builder().store(int: 0, bits: 32).writeSnakeData(Data(textPayload.utf8)).endCell()
+            }
         return .internal(to: to, value: value, bounce: bounce, stateInit: stateInit, body: body)
     }
 }

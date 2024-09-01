@@ -1,5 +1,7 @@
-import Foundation
 import BigInt
+import Foundation
+
+// MARK: - Contract
 
 /// Common interface for all contracts that allows computing contract addresses and messages
 public protocol Contract {
@@ -15,16 +17,22 @@ extension Contract {
     }
 }
 
+// MARK: - ContractState
+
 public struct ContractState {
     let balance: BigInt
     let last: ContractStateLast?
     let state: ContractStateStatus
 }
 
+// MARK: - ContractStateLast
+
 public struct ContractStateLast {
     let lt: BigInt
     let hash: Data
 }
+
+// MARK: - ContractStateStatus
 
 public enum ContractStateStatus {
     case uninit
@@ -32,6 +40,8 @@ public enum ContractStateStatus {
     case frozen(stateHash: Data?)
 }
 
+
+// MARK: - OpaqueContract
 
 public struct OpaqueContract: Contract {
     public let workchain: Int8

@@ -1,10 +1,14 @@
 import Foundation
 
+// MARK: - PayExternalMessage
+
 public struct PayExternalMessage {
     let address: Address
     let message: Cell
     let body: Cell
 }
+
+// MARK: - SubscriptionV1
 
 public struct SubscriptionV1: Contract {
     public let code: Cell
@@ -36,8 +40,9 @@ public struct SubscriptionV1: Contract {
         self.startAt = startAt
         self.subscriptionId = subscriptionId
         
-        let boc = "te6cckECDwEAAmIAART/APSkE/S88sgLAQIBIAIDAgFIBAUDavIw2zxTNaEnqQT4IyehKKkEAbxRNaD4I7kTsPKe+AByUhC+lFOH8AeOhVOG2zyk4vgjAts8CwwNAgLNBgcBIaDQybZ4E/SI3gQR9IjeBBATCwSP1tngXoaYGY/SAYKYRjgsdOL4QZmemPmEEIMjm6OV1JeAPwGLhBCDq3NbvtnnAphOOC2cdGiEYvhjhBCDq3NbvtnnAVa6TgkECwoKCAJp8Q/SIYQJOIbZ58EsEIMjm6OThACGRlgqgDZ4soAf0BCmW1ZY+JZZ/kuf2AP8EIMjm6OW2eQOCgTwjo0QjF8McIIQdW5rd9s84ArTHzCCEHBsdWeDHrFSELqPSDBTJKEmqQT4IyahJ6kEvvJxCfpEMKYZ+DPQeNch1ws/UmChG76OkjA2+CNwcIIQc3VicydZ2zxQd94QaRBYEEcQNkUTUELbPOA5XwdsIjKCEGRzdHK6CgoNCQEajol/ghBkc3Ry2zzgMAoAaCGzmYIQBAAAAHL7At5w+CdvEYAQyMsFUAXPFiH6AhT0ABPLaRLLH4MGApSBAKAy3skB+wAAMO1E0PpA+kD6ANMf0x/TH9Mf0x/TB9MfMAGAIfpEMCCBOpjbPAGmGfgz0HjXIdcLP6Bw+CWCEHBsdWcigBjIywVQB88WUAT6AhXLahLLHxPLPwH6AssAyXP7AA4AQMhQCs8WUAjPFlAG+gIUyx8Syx/LH8sfyx/LB8sfye1UAFgBphX4M9Ag1wsHgQDRupWBAIjXId7TByGBAN26AoEA3roSsfLgR9M/MKirD+WFWrQ="
-        self.code = try! Cell.fromBoc(src: Data(base64Encoded: boc)!)[0]
+        let boc =
+            "te6cckECDwEAAmIAART/APSkE/S88sgLAQIBIAIDAgFIBAUDavIw2zxTNaEnqQT4IyehKKkEAbxRNaD4I7kTsPKe+AByUhC+lFOH8AeOhVOG2zyk4vgjAts8CwwNAgLNBgcBIaDQybZ4E/SI3gQR9IjeBBATCwSP1tngXoaYGY/SAYKYRjgsdOL4QZmemPmEEIMjm6OV1JeAPwGLhBCDq3NbvtnnAphOOC2cdGiEYvhjhBCDq3NbvtnnAVa6TgkECwoKCAJp8Q/SIYQJOIbZ58EsEIMjm6OThACGRlgqgDZ4soAf0BCmW1ZY+JZZ/kuf2AP8EIMjm6OW2eQOCgTwjo0QjF8McIIQdW5rd9s84ArTHzCCEHBsdWeDHrFSELqPSDBTJKEmqQT4IyahJ6kEvvJxCfpEMKYZ+DPQeNch1ws/UmChG76OkjA2+CNwcIIQc3VicydZ2zxQd94QaRBYEEcQNkUTUELbPOA5XwdsIjKCEGRzdHK6CgoNCQEajol/ghBkc3Ry2zzgMAoAaCGzmYIQBAAAAHL7At5w+CdvEYAQyMsFUAXPFiH6AhT0ABPLaRLLH4MGApSBAKAy3skB+wAAMO1E0PpA+kD6ANMf0x/TH9Mf0x/TB9MfMAGAIfpEMCCBOpjbPAGmGfgz0HjXIdcLP6Bw+CWCEHBsdWcigBjIywVQB88WUAT6AhXLahLLHxPLPwH6AssAyXP7AA4AQMhQCs8WUAjPFlAG+gIUyx8Syx/LH8sfyx/LB8sfye1UAFgBphX4M9Ag1wsHgQDRupWBAIjXId7TByGBAN26AoEA3roSsfLgR9M/MKirD+WFWrQ="
+        code = try! Cell.fromBoc(src: Data(base64Encoded: boc)!)[0]
     }
     
     public var stateInit: StateInit {
@@ -74,7 +79,8 @@ public struct SubscriptionV1: Contract {
         let message = try Builder().store(header).endCell()
         
         let defaultTimeout = UInt64(Date().timeIntervalSince1970) + 60 // Default timeout: 60 seconds
-        let body = try Builder().store(uint: defaultTimeout, bits: 64).endCell() // this is not required by the contract; just to make it easier to distinguish messages
+        let body = try Builder().store(uint: defaultTimeout, bits: 64)
+            .endCell() // this is not required by the contract; just to make it easier to distinguish messages
         
         return PayExternalMessage(address: selfAddress, message: message, body: body)
     }

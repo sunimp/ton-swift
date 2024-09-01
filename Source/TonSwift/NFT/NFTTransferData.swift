@@ -1,12 +1,12 @@
 //
 //  NFTTransferData.swift
-//  
+//
 //
 //  Created by Grigory on 25.8.23..
 //
 
-import Foundation
 import BigInt
+import Foundation
 
 public struct NFTTransferData: CellCodable {
     public let queryId: UInt64
@@ -43,6 +43,7 @@ public struct NFTTransferData: CellCodable {
             newOwnerAddress: newOwnerAddress,
             responseAddress: responseAddress,
             forwardAmount: forwardAmount,
-            forwardPayload: forwardPayload)
+            forwardPayload: forwardPayload
+        )
     }
 }

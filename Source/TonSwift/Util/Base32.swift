@@ -1,16 +1,16 @@
 import Foundation
 
-fileprivate let alphabet = "abcdefghijklmnopqrstuvwxyz234567"
+private let alphabet = "abcdefghijklmnopqrstuvwxyz234567"
 
 extension Data {
     /// Encodes data to base32 format
     public func toBase32() -> String {
-        let length = self.count
+        let length = count
         var bits = 0
         var value = 0
         var output = ""
         
-        for i in 0..<length {
+        for i in 0 ..< length {
             value = (value << 8) | Int(self[i])
             bits += 8
             
@@ -28,7 +28,7 @@ extension Data {
 
 extension String {
     func fromBase32() throws -> Data {
-        let cleanedInput = self.lowercased()
+        let cleanedInput = lowercased()
         let length = cleanedInput.count
         var bits = 0
         var value = 0
@@ -51,7 +51,7 @@ extension String {
     }
 }
 
-fileprivate func readChar(alphabet: String, char: Character) throws -> Int {
+private func readChar(alphabet: String, char: Character) throws -> Int {
     if let idx = alphabet.firstIndex(of: char) {
         return alphabet.distance(from: alphabet.startIndex, to: idx)
     } else {

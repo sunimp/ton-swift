@@ -1,12 +1,12 @@
 //
 //  NFTTransferDataTests.swift
-//  
+//
 //
 //  Created by Grigory on 25.8.23..
 //
 
-import XCTest
 import BigInt
+import XCTest
 @testable import TonSwift
 
 final class NFTTransferDataTests: XCTestCase {
@@ -28,11 +28,13 @@ final class NFTTransferDataTests: XCTestCase {
                 .store(int: 0, bits: 32)
                 .writeSnakeData(Data(comment.utf8)).endCell()
             
-            return NFTTransferData(queryId: queryId,
-                                   newOwnerAddress: newOwnerAddress,
-                                   responseAddress: responseAddress,
-                                   forwardAmount: forwardAmount,
-                                   forwardPayload: commentCell)
+            return NFTTransferData(
+                queryId: queryId,
+                newOwnerAddress: newOwnerAddress,
+                responseAddress: responseAddress,
+                forwardAmount: forwardAmount,
+                forwardPayload: commentCell
+            )
         }
     }
 
@@ -52,10 +54,12 @@ final class NFTTransferDataTests: XCTestCase {
         let builder = Builder()
         let nftTransferDataCell = try builder.store(try nftTransferData).endCell()
 
-        XCTAssertEqual(try nftTransferDataCell.toString(),
-                       """
-                       x{5FCC3D14000000000000021F8006E2451A5FF8C5BEA1DC8505A789427312E714E1783A8DEBF2573D06BADDAD571001AAD4BD6DAA342C7D03C496083C01AEC31F1A457B8C993C62823E3713E11FD8186989681C_}
-                        x{0000000048656C6C6F2C2074686973206973206120636F6D6D656E74}
-                       """)
+        XCTAssertEqual(
+            try nftTransferDataCell.toString(),
+            """
+            x{5FCC3D14000000000000021F8006E2451A5FF8C5BEA1DC8505A789427312E714E1783A8DEBF2573D06BADDAD571001AAD4BD6DAA342C7D03C496083C01AEC31F1A457B8C993C62823E3713E11FD8186989681C_}
+             x{0000000048656C6C6F2C2074686973206973206120636F6D6D656E74}
+            """
+        )
     }
 }

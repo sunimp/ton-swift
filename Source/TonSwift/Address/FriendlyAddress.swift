@@ -1,11 +1,13 @@
 import Foundation
 
 /// By default, addresses are bounceable for safety of TON transfers.
-public let BounceableDefault = true;
+public let BounceableDefault = true
 
 let bounceableTag: UInt8 = 0x11
 let nonBounceableTag: UInt8 = 0x51
 let testFlag: UInt8 = 0x80
+
+// MARK: - FriendlyAddress
 
 /// Address encoded in a friendly format
 public struct FriendlyAddress: Codable, Hashable {
@@ -13,8 +15,8 @@ public struct FriendlyAddress: Codable, Hashable {
     public let isBounceable: Bool
     public let address: Address
     
-    var workchain: Int8 { return self.address.workchain }
-    var hash: Data { return self.address.hash }
+    var workchain: Int8 { address.workchain }
+    var hash: Data { address.hash }
         
     public init(string: String) throws {
         // Convert from url-friendly to true base64
@@ -31,8 +33,8 @@ public struct FriendlyAddress: Codable, Hashable {
             throw TonError.custom("Unknown address type: byte length is not equal to 36")
         }
         
-        let addr = data.subdata(in: 0..<34)
-        let crc = data.subdata(in: 34..<36)
+        let addr = data.subdata(in: 0 ..< 34)
+        let crc = data.subdata(in: 34 ..< 36)
         let calcedCrc = addr.crc16()
         
         if calcedCrc[0] != crc[0] || calcedCrc[1] != crc[1] {
@@ -41,31 +43,31 @@ public struct FriendlyAddress: Codable, Hashable {
 
         var tag = addr[0]
         if tag & testFlag != 0 {
-            self.isTestOnly = true
+            isTestOnly = true
             tag = tag ^ testFlag
         } else {
-            self.isTestOnly = false
+            isTestOnly = false
         }
 
-        if tag != bounceableTag && tag != nonBounceableTag {
+        if tag != bounceableTag, tag != nonBounceableTag {
             throw TonError.custom("Unknown address tag")
         }
 
-        self.isBounceable = (tag == bounceableTag)
+        isBounceable = (tag == bounceableTag)
 
-        let wc: Int8
-        if addr[1] == 0xff {
-            wc = -1
-        } else {
-            wc = Int8(addr[1])
-        }
-        let hash = addr.subdata(in: 2..<34)
-        self.address = Address(workchain: wc, hash: hash)
+        let wc: Int8 =
+            if addr[1] == 0xff {
+                -1
+            } else {
+                Int8(addr[1])
+            }
+        let hash = addr.subdata(in: 2 ..< 34)
+        address = Address(workchain: wc, hash: hash)
     }
     
     public init(address: Address, testOnly: Bool = false, bounceable: Bool = BounceableDefault) {
-        self.isTestOnly = testOnly
-        self.isBounceable = bounceable
+        isTestOnly = testOnly
+        isBounceable = bounceable
         self.address = address
     }
         
@@ -75,12 +77,12 @@ public struct FriendlyAddress: Codable, Hashable {
             tag |= testFlag
         }
         
-        var wcByte: UInt8
-        if self.address.workchain == -1 {
-            wcByte = UInt8.max
-        } else {
-            wcByte = UInt8(self.workchain)
-        }
+        let wcByte =
+            if address.workchain == -1 {
+                UInt8.max
+            } else {
+                UInt8(workchain)
+            }
         
         var addr = Data(count: 34)
         addr[0] = tag

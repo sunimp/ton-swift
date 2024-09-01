@@ -1,26 +1,26 @@
 import Foundation
 
-/*
- Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L123
- int_msg_info$0 ihr_disabled:Bool
-                bounce:Bool
-                bounced:Bool
-                src:MsgAddressInt
-                dest:MsgAddressInt
-                value:CurrencyCollection
-                ihr_fee:Grams
-                fwd_fee:Grams
-                created_lt:uint64
-                created_at:uint32 = CommonMsgInfo;
- 
- ext_in_msg_info$10 src:MsgAddressExt
-                    dest:MsgAddressInt
-                    import_fee:Grams = CommonMsgInfo;
- ext_out_msg_info$11 src:MsgAddressInt
-                     dest:MsgAddressExt
-                     created_lt:uint64
-                     created_at:uint32 = CommonMsgInfo;
- */
+// MARK: - CommonMsgInfoInternal
+
+// Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L123
+// int_msg_info$0 ihr_disabled:Bool
+//               bounce:Bool
+//               bounced:Bool
+//               src:MsgAddressInt
+//               dest:MsgAddressInt
+//               value:CurrencyCollection
+//               ihr_fee:Grams
+//               fwd_fee:Grams
+//               created_lt:uint64
+//               created_at:uint32 = CommonMsgInfo;
+//
+// ext_in_msg_info$10 src:MsgAddressExt
+//                   dest:MsgAddressInt
+//                   import_fee:Grams = CommonMsgInfo;
+// ext_out_msg_info$11 src:MsgAddressInt
+//                    dest:MsgAddressExt
+//                    created_lt:uint64
+//                    created_at:uint32 = CommonMsgInfo;
 
 public struct CommonMsgInfoInternal {
     public let ihrDisabled: Bool
@@ -35,11 +35,15 @@ public struct CommonMsgInfoInternal {
     public let createdAt: UInt32
 }
 
+// MARK: - CommonMsgInfoExternalIn
+
 public struct CommonMsgInfoExternalIn {
     public let src: ExternalAddress?
     public let dest: Address
     public let importFee: Coins
 }
+
+// MARK: - CommonMsgInfoExternalOut
 
 public struct CommonMsgInfoExternalOut {
     public let src: Address
@@ -47,6 +51,8 @@ public struct CommonMsgInfoExternalOut {
     public let createdLt: UInt64
     public let createdAt: UInt32
 }
+
+// MARK: - CommonMsgInfo
 
 public enum CommonMsgInfo: CellCodable {
     case internalInfo(info: CommonMsgInfoInternal)

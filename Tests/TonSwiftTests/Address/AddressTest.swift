@@ -5,8 +5,8 @@ final class AddressTest: XCTestCase {
 
     func testAddress() throws {
         // should parse addresses in various forms
-        let address1 = try FriendlyAddress(string:"0QAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4-QO")
-        let address2 = try FriendlyAddress(string:"kQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi47nL")
+        let address1 = try FriendlyAddress(string: "0QAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4-QO")
+        let address2 = try FriendlyAddress(string: "kQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi47nL")
         let address3 = try Address.parse(raw: "0:2cf55953e92efbeadab7ba725c3f93a0b23f842cbba72d7b8e6f510a70e422e3")
         XCTAssertFalse(address1.isBounceable)
         XCTAssertTrue(address2.isBounceable)
@@ -35,7 +35,10 @@ final class AddressTest: XCTestCase {
         XCTAssertEqual(address.toString(bounceable: false), "UQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi41-E")
         XCTAssertEqual(address.toString(testOnly: true, bounceable: false), "0QAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4-QO")
         XCTAssertEqual(address.toString(urlSafe: false, bounceable: false), "UQAs9VlT6S776tq3unJcP5Ogsj+ELLunLXuOb1EKcOQi41+E")
-        XCTAssertEqual(address.toString(urlSafe: false, testOnly: true, bounceable: false), "0QAs9VlT6S776tq3unJcP5Ogsj+ELLunLXuOb1EKcOQi4+QO")
+        XCTAssertEqual(
+            address.toString(urlSafe: false, testOnly: true, bounceable: false),
+            "0QAs9VlT6S776tq3unJcP5Ogsj+ELLunLXuOb1EKcOQi4+QO"
+        )
         
         // should implement equals
         let addr1 = try Address.parse(raw: "0:2cf55953e92efbeadab7ba725c3f93a0b23f842cbba72d7b8e6f510a70e422e3")

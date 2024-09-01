@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - CellCodableDictionary
+
 /// Type of a standard dictionary where keys have a statically known length.
 /// To work with dynamically known key lengths, use `DictionaryCoder` to load and store dictionaries.
 public protocol CellCodableDictionary: CellCodable {
@@ -7,14 +9,19 @@ public protocol CellCodableDictionary: CellCodable {
     static func loadRootFrom(slice: Slice) throws -> Self
 }
 
+// MARK: - Dictionary + CellCodable
+
 extension Dictionary: CellCodable where Key: CellCodable & StaticSize, Value: CellCodable {
     public static func loadFrom(slice: Slice) throws -> Self {
-        return try DictionaryCoder.default().load(slice)
+        try DictionaryCoder.default().load(slice)
     }
+
     public func storeTo(builder: Builder) throws {
         try DictionaryCoder.default().store(map: self, builder: builder)
     }
 }
+
+// MARK: - Dictionary + CellCodableDictionary
 
 extension Dictionary: CellCodableDictionary where Key: CellCodable & StaticSize, Value: CellCodable {
     
@@ -23,33 +30,41 @@ extension Dictionary: CellCodableDictionary where Key: CellCodable & StaticSize,
     }
     
     public static func loadRootFrom(slice: Slice) throws -> Self {
-        return try DictionaryCoder.default().loadRoot(slice)
+        try DictionaryCoder.default().loadRoot(slice)
     }
 }
+
+// MARK: - Set + CellCodable
 
 extension Set: CellCodable where Element: CellCodable & StaticSize {
     public static func loadFrom(slice: Slice) throws -> Self {
         let dict: [Element: Empty] = try DictionaryCoder.default().load(slice)
         return Set(dict.keys)
     }
+
     public func storeTo(builder: Builder) throws {
-        let dict: [Element: Empty] = Dictionary(uniqueKeysWithValues: self.map { k in (k, Empty()) })
+        let dict: [Element: Empty] = Dictionary(uniqueKeysWithValues: map { k in (k, Empty()) })
         try DictionaryCoder.default().store(map: dict, builder: builder)
     }
 }
+
+// MARK: - Set + CellCodableDictionary
 
 extension Set: CellCodableDictionary where Element: CellCodable & StaticSize {
     public static func loadRootFrom(slice: Slice) throws -> Self {
         let dict: [Element: Empty] = try DictionaryCoder.default().loadRoot(slice)
         return Set(dict.keys)
     }
+
     public func storeRootTo(builder: Builder) throws {
-        let dict: [Element: Empty] = Dictionary(uniqueKeysWithValues: self.map { k in (k, Empty()) })
+        let dict: [Element: Empty] = Dictionary(uniqueKeysWithValues: map { k in (k, Empty()) })
         try DictionaryCoder.default().storeRoot(map: dict, builder: builder)
     }
 }
 
 
+
+// MARK: - DictionaryCoder
 
 /// Coder for the dictionaries that stores the coding rules for keys and values.
 /// Use this explicit API when working with dynamically-sized dictionary keys.
@@ -65,20 +80,21 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
         self.valueCoder = valueCoder
     }
 
-    static func `default`<KT,VT>() -> DictionaryCoder<K,V>
+    static func `default`<KT, VT>() -> DictionaryCoder<K, V>
         where KT: CellCodable & StaticSize & Hashable,
-              VT: CellCodable,
-              K == DefaultCoder<KT>,
-              V == DefaultCoder<VT> {
-        return DictionaryCoder(
+        VT: CellCodable,
+        K == DefaultCoder<KT>,
+        V == DefaultCoder<VT>
+    {
+        DictionaryCoder(
             keyLength: KT.bitWidth,
             DefaultCoder<KT>(),
             DefaultCoder<VT>()
-       )
+        )
     }
     
     /// Loads dictionary from slice
-    public func load(_ slice: Slice) throws -> [K.T:V.T] {
+    public func load(_ slice: Slice) throws -> [K.T: V.T] {
         let cell = try slice.loadMaybeRef()
         if let cell, !cell.isExotic {
             return try loadRoot(cell.beginParse())
@@ -91,14 +107,14 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
     }
     
     /// Loads root of the dictionary directly from a slice
-    public func loadRoot(_ slice: Slice) throws -> [K.T:V.T] {
+    public func loadRoot(_ slice: Slice) throws -> [K.T: V.T] {
         var map = [K.T: V.T]()
         try doParse(prefix: Builder(), slice: slice, n: keyLength, result: &map)
         return map
     }
     
     func store(map: [K.T: V.T], builder: Builder) throws {
-        if map.count == 0 {
+        if map.isEmpty {
             try builder.store(bit: 0)
         } else {
             try builder.store(bit: 1)
@@ -109,7 +125,7 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
     }
     
     func storeRoot(map: [K.T: V.T], builder: Builder) throws {
-        if map.count == 0 {
+        if map.isEmpty {
             throw TonError.custom("Cannot store empty dictionary directly")
         }
                 
@@ -131,7 +147,7 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
     private func doParse(prefix: Builder, slice: Slice, n: Int, result: inout [K.T: V.T]) throws {
         // Reading label
         let k = bitsForInt(n)
-        var pfxlen: Int = 0
+        var pfxlen = 0
         
         // short mode: $0
         if try slice.loadBit() == 0 {
@@ -143,7 +159,7 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
             if try slice.loadBit() == 0 {
                 pfxlen = Int(try slice.loadUint(bits: k))
                 try prefix.store(bits: try slice.loadBits(pfxlen))
-            // same mode: $11
+                // same mode: $11
             } else {
                 // Same label detected
                 let bit = try slice.loadBit()
@@ -179,10 +195,14 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
 
 
 
+// MARK: - Node
+
 enum Node<T> {
     case fork(left: Edge<T>, right: Edge<T>)
     case leaf(value: T)
 }
+
+// MARK: - Edge
 
 class Edge<T> {
     let label: Bitstring
@@ -296,18 +316,18 @@ func writeLabel(src: Bitstring, keyLength: Int, to: Builder) throws {
     // short mode '0' requires 2n+2 bits (always used for n=0)
     // long mode '10' requires 2+k+n bits (used only for n<=1)
     // same mode '11' requires 3+k bits (for n>=2, k<2n-1)
-    if let bit = src.repeatsSameBit(), n > 1 && k < 2 * n - 1 { // same mode '11'
-        try to.store(bits: 1, 1)       // header
-        try to.store(bit: bit)         // value
+    if let bit = src.repeatsSameBit(), n > 1, k < 2 * n - 1 { // same mode '11'
+        try to.store(bits: 1, 1) // header
+        try to.store(bit: bit) // value
         try to.store(uint: n, bits: k) // length
     } else if k < n { // long mode '10'
-        try to.store(bits: 1, 0)       // header
+        try to.store(bits: 1, 0) // header
         try to.store(uint: n, bits: k) // length
-        try to.store(bits: src)        // the string itself
+        try to.store(bits: src) // the string itself
     } else { // short mode '0'
-        try to.store(bit: 0)     // header
-        try to.store(Unary(n))        // unary length prefix: 1{n}0
-        try to.store(bits: src)  // the string itself
+        try to.store(bit: 0) // header
+        try to.store(Unary(n)) // unary length prefix: 1{n}0
+        try to.store(bits: src) // the string itself
     }
 }
 
@@ -348,8 +368,8 @@ func findCommonPrefix(src: some Collection<Bitstring>) -> Bitstring {
     let last = sorted.last!
 
     var size = 0
-    for i in 0..<first.length {
-        if (first.at(unchecked: i) != last.at(unchecked: i)) {
+    for i in 0 ..< first.length {
+        if first.at(unchecked: i) != last.at(unchecked: i) {
             break
         }
         size += 1
@@ -358,6 +378,6 @@ func findCommonPrefix(src: some Collection<Bitstring>) -> Bitstring {
     return try! first.substring(offset: 0, length: size)
 }
 
-fileprivate func invariant(_ cond: Bool) throws {
+private func invariant(_ cond: Bool) throws {
     if !cond { throw TonError.custom("Internal inconsistency") }
 }

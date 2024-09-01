@@ -1,12 +1,12 @@
 //
 //  JettonTransferData.swift
-//  
+//
 //
 //  Created by Grigory on 11.7.23..
 //
 
-import Foundation
 import BigInt
+import Foundation
 
 public struct JettonTransferData: CellCodable {
     public let queryId: UInt64
@@ -39,13 +39,14 @@ public struct JettonTransferData: CellCodable {
         let forwardPayload = try slice.loadMaybeRef()
    
         
-        return JettonTransferData(queryId: queryId,
-                                  amount: amount,
-                                  toAddress: toAddress,
-                                  responseAddress: responseAddress,
-                                  forwardAmount: forwardAmount,
-                                  forwardPayload: forwardPayload,
-                                  customPayload: customPayload
+        return JettonTransferData(
+            queryId: queryId,
+            amount: amount,
+            toAddress: toAddress,
+            responseAddress: responseAddress,
+            forwardAmount: forwardAmount,
+            forwardPayload: forwardPayload,
+            customPayload: customPayload
         )
     }
 }

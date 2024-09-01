@@ -1,5 +1,7 @@
-import Foundation
 import BigInt
+import Foundation
+
+// MARK: - SenderArguments
 
 public struct SenderArguments {
     let value: BigUInt
@@ -10,7 +12,9 @@ public struct SenderArguments {
     let body: Cell
 }
 
+// MARK: - Sender
+
 public struct Sender {
     let address: Address?
-    let send: ((SenderArguments) async throws -> Void)
+    let send: (SenderArguments) async throws -> Void
 }

@@ -1,13 +1,19 @@
 import Foundation
 import TweetNacl
 
+// MARK: - WalletTransferSignerError
+
 public enum WalletTransferSignerError: Swift.Error {
     case failedToSignMessage
 }
 
+// MARK: - WalletTransferSigner
+
 public protocol WalletTransferSigner {
     func signMessage(_ message: Data) throws -> Data
 }
+
+// MARK: - WalletTransferSecretKeySigner
 
 public struct WalletTransferSecretKeySigner: WalletTransferSigner {
     private let secretKey: Data
@@ -25,10 +31,12 @@ public struct WalletTransferSecretKeySigner: WalletTransferSigner {
     }
 }
 
+// MARK: - WalletTransferEmptyKeySigner
+
 public struct WalletTransferEmptyKeySigner: WalletTransferSigner {
-    public init() {}
+    public init() { }
     
-    public func signMessage(_ message: Data) throws -> Data {
+    public func signMessage(_: Data) throws -> Data {
         guard let data = String(repeating: "0", count: .signatureBytesCount).data(using: .utf8) else {
             throw WalletTransferSignerError.failedToSignMessage
         }
@@ -36,6 +44,6 @@ public struct WalletTransferEmptyKeySigner: WalletTransferSigner {
     }
 }
 
-private extension Int {
-    static let signatureBytesCount = 64
+extension Int {
+    fileprivate static let signatureBytesCount = 64
 }

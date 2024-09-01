@@ -1,5 +1,5 @@
-import Foundation
 import CommonCrypto
+import Foundation
 
 public let pbkdf2Sha512Iterations = 100000
 

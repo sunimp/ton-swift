@@ -1,11 +1,9 @@
 import Foundation
 
-/*
- Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L147
- message$_ {X:Type} info:CommonMsgInfo
-                    init:(Maybe (Either StateInit ^StateInit))
-                    body:(Either X ^X) = Message X;
- */
+// Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L147
+// message$_ {X:Type} info:CommonMsgInfo
+//                   init:(Maybe (Either StateInit ^StateInit))
+//                   body:(Either X ^X) = Message X;
 
 public struct Message: CellCodable {
     public let info: CommonMsgInfo
@@ -24,12 +22,12 @@ public struct Message: CellCodable {
             }
         }
         
-        var body: Cell
-        if try slice.loadBoolean() {
-            body = try slice.loadRef()
-        } else {
-            body = try slice.loadRemainder()
-        }
+        let body: Cell =
+            if try slice.loadBoolean() {
+                try slice.loadRef()
+            } else {
+                try slice.loadRemainder()
+            }
         
         return Message(info: info, stateInit: stateInit, body: body)
     }
@@ -47,10 +45,10 @@ public struct Message: CellCodable {
                 try builder.store(initCell)
             } else {
                 try builder.store(bit: 1)
-                try builder.store(ref:initCell)
+                try builder.store(ref: initCell)
             }
         } else {
-            try builder.store(bit:0)
+            try builder.store(bit: 0)
         }
         
         if let space = builder.fit(body.metrics), space.bitsCount >= 1 {
@@ -58,12 +56,12 @@ public struct Message: CellCodable {
             try builder.store(body.toBuilder())
         } else {
             try builder.store(bit: 1)
-            try builder.store(ref:body)
+            try builder.store(ref: body)
         }
     }
     
     public static func external(to: Address, stateInit: StateInit?, body: Cell = .empty) -> Message {
-        return Message(
+        Message(
             info: .externalInInfo(
                 info: CommonMsgInfoExternalIn(
                     src: nil,

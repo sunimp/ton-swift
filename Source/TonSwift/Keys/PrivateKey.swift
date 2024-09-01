@@ -1,6 +1,6 @@
 //
 //  PrivateKey.swift
-//  
+//
 //
 //  Created by Grigory on 22.6.23..
 //

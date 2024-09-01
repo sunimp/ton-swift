@@ -5,7 +5,7 @@ final class BitStringTest: XCTestCase {
 
     func testBitString() throws {
         // should read bits
-        let bs = Bitstring(data: Data([0b10101010]), unchecked:(offset: 0, length: 8))
+        let bs = Bitstring(data: Data([0b10101010]), unchecked: (offset: 0, length: 8))
         XCTAssertEqual(try bs.at(0), 1)
         XCTAssertEqual(try bs.at(1), 0)
         XCTAssertEqual(try bs.at(2), 1)
@@ -17,9 +17,9 @@ final class BitStringTest: XCTestCase {
         XCTAssertEqual(bs.toString(), "AA")
         
         // should equals
-        let a = Bitstring(data: Data([0b10101010]), unchecked:(offset: 0, length: 8))
-        let b = Bitstring(data: Data([0b10101010]), unchecked:(offset: 0, length: 8))
-        let c = Bitstring(data: Data([0, 0b10101010]), unchecked:(offset: 8, length: 8))
+        let a = Bitstring(data: Data([0b10101010]), unchecked: (offset: 0, length: 8))
+        let b = Bitstring(data: Data([0b10101010]), unchecked: (offset: 0, length: 8))
+        let c = Bitstring(data: Data([0, 0b10101010]), unchecked: (offset: 8, length: 8))
         XCTAssertEqual(a, b)
         XCTAssertEqual(b, a)
         XCTAssertEqual(a, c)
@@ -37,7 +37,7 @@ final class BitStringTest: XCTestCase {
         XCTAssertEqual(try Bitstring(data: Data([0b11101000]), offset: 0, length: 5).toString(), "EC_")
         
         // should do subbuffers
-        let bs1 = Bitstring(data: Data([1, 2, 3, 4, 5, 6, 7, 8]), unchecked:(offset: 0, length: 64))
+        let bs1 = Bitstring(data: Data([1, 2, 3, 4, 5, 6, 7, 8]), unchecked: (offset: 0, length: 64))
         let bs2 = try bs1.subbuffer(offset: 0, length: 16)
         XCTAssertEqual(bs2!.count, 2)
         
@@ -92,7 +92,7 @@ final class BitStringTest: XCTestCase {
             ("0100101010000010011101111", "4A8277C_"),
             ("10", "A_"),
             ("1010110110110110110100110010110", "ADB6D32D_"),
-            ("010100000000001000111101011001", "50023D66_")
+            ("010100000000001000111101011001", "50023D66_"),
         ]
         
         for (bin, hex) in cases {

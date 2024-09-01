@@ -7,6 +7,8 @@ public let BitsPerCell = 1023
 public let RefsPerCell = 4
 
 
+// MARK: - CellType
+
 public enum CellType: Int {
     case ordinary = -1
     case prunedBranch = 1
@@ -15,6 +17,8 @@ public enum CellType: Int {
     case merkleUpdate = 4
 }
 
+// MARK: - CellMetrics
+
 /// Metrics of a cell or a builder
 public struct CellMetrics {
     /// Number of bits in the cell
@@ -22,6 +26,8 @@ public struct CellMetrics {
     /// Number of refs in the cell
     var refsCount: Int
 }
+
+// MARK: - Cell
 
 /// TON cell
 public struct Cell: Hashable {
@@ -36,7 +42,7 @@ public struct Cell: Hashable {
     public var isExotic: Bool { type != .ordinary }
     
     public var metrics: CellMetrics {
-        return CellMetrics(bitsCount: bits.length, refsCount: refs.count)
+        CellMetrics(bitsCount: bits.length, refsCount: refs.count)
     }
 
     // Precomputed data
@@ -53,9 +59,8 @@ public struct Cell: Hashable {
         bits: Bitstring = Bitstring.empty,
         refs: [Cell] = []
     ) throws {
-        
         if exotic {
-            self.basic = try BasicCell.exotic(bits: bits, refs: refs)
+            basic = try BasicCell.exotic(bits: bits, refs: refs)
         } else {
             if refs.count > RefsPerCell {
                 throw TonError.custom("Invalid number of references")
@@ -64,17 +69,17 @@ public struct Cell: Hashable {
                 throw TonError.custom("Bits overflow: \(bits.length) > \(BitsPerCell)")
             }
             
-            self.basic = BasicCell(type: .ordinary, bits: bits, refs: refs)
+            basic = BasicCell(type: .ordinary, bits: bits, refs: refs)
         }
-        let precomputed = try self.basic.precompute();
-        self.mask = precomputed.mask
-        self._depths = precomputed.depths
-        self._hashes = precomputed.hashes
+        let precomputed = try basic.precompute()
+        mask = precomputed.mask
+        _depths = precomputed.depths
+        _hashes = precomputed.hashes
     }
     
     public init() {
-        self.basic = BasicCell(type: .ordinary, bits: Bitstring.empty, refs: [])
-        self.mask = LevelMask()
+        basic = BasicCell(type: .ordinary, bits: Bitstring.empty, refs: [])
+        mask = LevelMask()
     }
     
     /// Initializes a new cell with plain bytestring. This does not parse Bag-of-Cells (BoC), but uses provided data as a bitstring (byte-aligned).
@@ -83,19 +88,15 @@ public struct Cell: Hashable {
         try self.init(bits: Bitstring(data: data))
     }
     
-    /**
-     Deserialize cells from BOC
-    - parameter src: source buffer
-    - returns array of cells
-    */
+    /// Deserialize cells from BOC
+    /// - parameter src: source buffer
+    /// - returns array of cells
     public static func fromBoc(src: Data) throws -> [Cell] {
-        return try deserializeBoc(src: src)
+        try deserializeBoc(src: src)
     }
 
-    /**
-     Helper class that deserializes a single cell from BOC in base64
-    - parameter src: source string
-    */
+    /// Helper class that deserializes a single cell from BOC in base64
+    /// - parameter src: source string
     public static func fromBase64(src: String) throws -> Cell {
         guard let data = Data(base64Encoded: src) else {
             throw NSError()
@@ -109,37 +110,33 @@ public struct Cell: Hashable {
         return parsed[0]
     }
     
-    /**
-     Get cell hash
-    - parameter level: level
-    - returns cell hash
-    */
+    /// Get cell hash
+    /// - parameter level: level
+    /// - returns cell hash
     public func hash(level: Int = 3) -> Data {
-        return _hashes[min(_hashes.count - 1, level)]
+        _hashes[min(_hashes.count - 1, level)]
     }
     
     /// Returns the lowest-order hash that represents an actual tree of cells, possibly pruned.
     /// This is the hash of the data being transmitted.
     /// For the hash of the underlying contents see  `hash(level:)` method.
     public func representationHash() -> Data {
-        return _hashes[0]
+        _hashes[0]
     }
     
     
-    /**
-     Get cell depth
-    - parameter level: level
-    - returns cell depth
-    */
+    /// Get cell depth
+    /// - parameter level: level
+    /// - returns cell depth
     public func depth(level: Int = 3) -> UInt32 {
-        return _depths[min(_depths.count - 1, level)]
+        _depths[min(_depths.count - 1, level)]
     }
     
     /// Convert cell to slice so it can be parsed.
     /// Same as `toSlice`.
     public func beginParse(allowExotic: Bool = false) throws -> Slice {
-        if isExotic && !allowExotic {
-            throw TonError.custom("Exotic cells cannot be parsed");
+        if isExotic, !allowExotic {
+            throw TonError.custom("Exotic cells cannot be parsed")
         }
         
         return Slice(cell: self)
@@ -148,26 +145,23 @@ public struct Cell: Hashable {
     /// Convert cell to slice so it can be parsed.
     /// Same as `beginParse`.
     public func toSlice() throws -> Slice {
-        return try beginParse()
+        try beginParse()
     }
 
     /// Convert cell to a builder that has this cell pre-stored. Finalizing this builder yields the same cell.
     public func toBuilder() throws -> Builder {
-        return try Builder().store(slice: toSlice())
+        try Builder().store(slice: toSlice())
     }
-    /**
-     Serializes cell to BOC
-    - parameter opts: options
-    */
+
+    /// Serializes cell to BOC
+    /// - parameter opts: options
     public func toBoc(idx: Bool = false, crc32: Bool = true) throws -> Data {
-        return try serializeBoc(root: self, idx: idx, crc32: crc32)
+        try serializeBoc(root: self, idx: idx, crc32: crc32)
     }
     
-    /**
-     Format cell to string
-    - parameter indent: indentation
-    - returns string representation
-    */
+    /// Format cell to string
+    /// - parameter indent: indentation
+    /// - returns string representation
     public func toString(indent: String = "") throws -> String {
         var t = "x"
         if isExotic {
@@ -193,23 +187,22 @@ public struct Cell: Hashable {
 
 }
 
-// MARK: - Equatable
+// MARK: Equatable
+
 extension Cell: Equatable {
-    /**
-     Checks cell to be euqal to another cell
-    - parameter other: other cell
-    - returns true if cells are equal
-    */
+    /// Checks cell to be euqal to another cell
+    /// - parameter other: other cell
+    /// - returns true if cells are equal
     public static func == (lhs: Cell, rhs: Cell) -> Bool {
-        return lhs.hash() == rhs.hash()
+        lhs.hash() == rhs.hash()
     }
 }
 
-// MARK: - Internal implementation
+// MARK: - BasicCell
 
 /// Internal basic Cell data: type, bits and refs.
 /// This is used for internal computations to produce full-featured `Cell` type with various precomputed data.
-fileprivate struct BasicCell: Hashable {
+private struct BasicCell: Hashable {
     let type: CellType
     let bits: Bitstring
     let refs: [Cell]
@@ -219,7 +212,7 @@ fileprivate struct BasicCell: Hashable {
         let reader = Slice(bits: bits)
         let typeInt = try reader.preloadUint(bits: 8)
         
-        let type: CellType;
+        let type: CellType
         switch typeInt {
         case 1:
             type = try resolvePruned(bits: bits, refs: refs).type
@@ -240,8 +233,8 @@ fileprivate struct BasicCell: Hashable {
         return BasicCell(type: type, bits: bits, refs: refs)
     }
 
-    // This function replicates precomputation logic on the cell data
-    // https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/vm/cells/DataCell.cpp#L214
+    /// This function replicates precomputation logic on the cell data
+    /// https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/vm/cells/DataCell.cpp#L214
     func precompute() throws -> (mask: LevelMask, hashes: [Data], depths: [UInt32]) {
         var levelMask: LevelMask
         var pruned: ExoticPruned? = nil
@@ -280,7 +273,7 @@ fileprivate struct BasicCell: Hashable {
         let hashIOffset = totalHashCount - hashCount
         
         var hashI: UInt32 = 0
-        for levelI in 0...levelMask.level {
+        for levelI in 0 ... levelMask.level {
             if !levelMask.isSignificant(level: levelI) {
                 continue
             }
@@ -307,15 +300,15 @@ fileprivate struct BasicCell: Hashable {
             // Depth
             var currentDepth: UInt32 = 0
             for c in refs {
-                var childDepth: UInt32
-                if type == .merkleProof || type == .merkleUpdate {
-                    childDepth = c.depth(level: Int(levelI) + 1)
-                } else {
-                    childDepth = c.depth(level: Int(levelI))
-                }
+                let childDepth: UInt32 =
+                    if type == .merkleProof || type == .merkleUpdate {
+                        c.depth(level: Int(levelI) + 1)
+                    } else {
+                        c.depth(level: Int(levelI))
+                    }
                 currentDepth = max(currentDepth, childDepth)
             }
-            if refs.count > 0 {
+            if !refs.isEmpty {
                 currentDepth += 1
             }
             
@@ -333,7 +326,7 @@ fileprivate struct BasicCell: Hashable {
         var resolvedHashes: [Data] = []
         var resolvedDepths: [UInt32] = []
         if pruned != nil {
-            for i in 0..<4 {
+            for i in 0 ..< 4 {
                 let hashIndex = levelMask.apply(level: UInt32(i)).hashIndex
                 let thisHashIndex = levelMask.hashIndex
                 if hashIndex != thisHashIndex {
@@ -345,7 +338,7 @@ fileprivate struct BasicCell: Hashable {
                 }
             }
         } else {
-            for i in 0..<4 {
+            for i in 0 ..< 4 {
                 let hashIndex = levelMask.apply(level: UInt32(i)).hashIndex
                 resolvedHashes.append(hashes[Int(hashIndex)])
                 resolvedDepths.append(depths[Int(hashIndex)])
@@ -369,31 +362,31 @@ func getRepr(bits: Bitstring, refs: [Cell], level: UInt32, type: CellType) throw
     reprCursor += 1
 
     // Write bits
-    repr.replaceSubrange(reprCursor..<reprCursor + bitsLen, with: bits.bitsToPaddedBuffer())
+    repr.replaceSubrange(reprCursor ..< reprCursor + bitsLen, with: bits.bitsToPaddedBuffer())
     reprCursor += bitsLen
 
     // Write refs
     for c in refs {
-        var childDepth: UInt32
-        if type == .merkleProof || type == .merkleUpdate {
-            childDepth = c.depth(level: Int(level) + 1)
-        } else {
-            childDepth = c.depth(level: Int(level))
-        }
+        let childDepth: UInt32 =
+            if type == .merkleProof || type == .merkleUpdate {
+                c.depth(level: Int(level) + 1)
+            } else {
+                c.depth(level: Int(level))
+            }
         repr[reprCursor] = UInt8(floor(Double(childDepth) / 256))
         reprCursor += 1
         repr[reprCursor] = UInt8(childDepth % 256)
         reprCursor += 1
     }
     for c in refs {
-        var childHash: Data
-        if type == .merkleProof || type == .merkleUpdate {
-            childHash = c.hash(level: Int(level) + 1)
-        } else {
-            childHash = c.hash(level: Int(level))
-        }
+        let childHash: Data =
+            if type == .merkleProof || type == .merkleUpdate {
+                c.hash(level: Int(level) + 1)
+            } else {
+                c.hash(level: Int(level))
+            }
         
-        for i in 0..<32 {
+        for i in 0 ..< 32 {
             repr[reprCursor + i] = childHash[i]
         }
         
@@ -403,6 +396,8 @@ func getRepr(bits: Bitstring, refs: [Cell], level: UInt32, type: CellType) throw
     return repr
 }
 
+
+// MARK: - ExoticPruned
 
 public struct ExoticPruned {
     public var mask: UInt32
@@ -417,8 +412,8 @@ func exoticPruned(bits: Bitstring, refs: [Cell]) throws -> ExoticPruned {
         throw TonError.custom("Pruned branch cell must have type 1, got \(type)")
     }
 
-    if refs.count != 0 {
-        throw TonError.custom("Pruned Branch cell can't has refs, got \(refs.count)");
+    if !refs.isEmpty {
+        throw TonError.custom("Pruned Branch cell can't has refs, got \(refs.count)")
     }
 
     // Resolve cell
@@ -433,13 +428,13 @@ func exoticPruned(bits: Bitstring, refs: [Cell]) throws -> ExoticPruned {
         let level = UInt32(try reader.loadUint(bits: 8))
         mask = LevelMask(mask: level)
         if mask.level < 1 || mask.level > 3 {
-            throw TonError.custom("Pruned Branch cell level must be >= 1 and <= 3, got \(mask.level)/\(mask.value)");
+            throw TonError.custom("Pruned Branch cell level must be >= 1 and <= 3, got \(mask.level)/\(mask.value)")
         }
 
         // Read pruned
-        let size = 8 + 8 + (mask.apply(level: mask.level - 1).hashCount * (256 /* Hash */ + 16 /* Depth */))
+        let size = 8 + 8 + (mask.apply(level: mask.level - 1).hashCount * (256 /* Hash */ + 16 /* Depth */ ))
         if bits.length != size {
-            throw TonError.custom("Pruned branch cell must have exactly size bits, got \(bits.length)");
+            throw TonError.custom("Pruned branch cell must have exactly size bits, got \(bits.length)")
         }
     }
 
@@ -447,7 +442,7 @@ func exoticPruned(bits: Bitstring, refs: [Cell]) throws -> ExoticPruned {
     var pruned: [(depth: UInt32, hash: Data)] = []
     var hashes: [Data] = []
     var depths: [UInt32] = []
-    for _ in 0..<mask.level {
+    for _ in 0 ..< mask.level {
         let hash = try reader.loadBytes(32)
         let depth = UInt32(try reader.loadUint(bits: 16))
         
@@ -464,7 +459,7 @@ func resolvePruned(bits: Bitstring, refs: [Cell]) throws -> (type: CellType, dep
     var depths = [UInt32]()
     var hashes = [Data]()
     let mask = LevelMask(mask: pruned.mask)
-    for i in 0..<pruned.pruned.count {
+    for i in 0 ..< pruned.pruned.count {
         depths.append(pruned.pruned[i].depth)
         hashes.append(pruned.pruned[i].hash)
     }
@@ -472,8 +467,11 @@ func resolvePruned(bits: Bitstring, refs: [Cell]) throws -> (type: CellType, dep
     return (CellType.prunedBranch, depths, hashes, mask)
 }
 
-func resolveMerkleProof(bits: Bitstring, refs: [Cell]) throws -> (type: CellType, depths: [UInt32], hashes: [Data], mask: LevelMask) {
-    let _/*merkleProof*/ = try exoticMerkleProof(bits: bits, refs: refs)
+func resolveMerkleProof(
+    bits: Bitstring,
+    refs: [Cell]
+) throws -> (type: CellType, depths: [UInt32], hashes: [Data], mask: LevelMask) {
+    let _ /* merkleProof */ = try exoticMerkleProof(bits: bits, refs: refs)
     let depths = [UInt32]()
     let hashes = [Data]()
     let mask = LevelMask(mask: refs[0].level >> 1)
@@ -481,8 +479,11 @@ func resolveMerkleProof(bits: Bitstring, refs: [Cell]) throws -> (type: CellType
     return (CellType.merkleProof, depths, hashes, mask)
 }
 
-func resolveMerkleUpdate(bits: Bitstring, refs: [Cell]) throws -> (type: CellType, depths: [UInt32], hashes: [Data], mask: LevelMask) {
-    let _/*merkleUpdate*/ = try exoticMerkleUpdate(bits: bits, refs: refs)
+func resolveMerkleUpdate(
+    bits: Bitstring,
+    refs: [Cell]
+) throws -> (type: CellType, depths: [UInt32], hashes: [Data], mask: LevelMask) {
+    let _ /* merkleUpdate */ = try exoticMerkleUpdate(bits: bits, refs: refs)
     let depths = [UInt32]()
     let hashes = [Data]()
     let mask = LevelMask(mask: (refs[0].level | refs[1].level) >> 1)
@@ -491,7 +492,10 @@ func resolveMerkleUpdate(bits: Bitstring, refs: [Cell]) throws -> (type: CellTyp
 }
 
 @discardableResult
-func exoticMerkleUpdate(bits: Bitstring, refs: [Cell]) throws -> (proofDepth1: UInt32, proofDepth2: UInt32, proofHash1: Data, proofHash2: Data) {
+func exoticMerkleUpdate(
+    bits: Bitstring,
+    refs: [Cell]
+) throws -> (proofDepth1: UInt32, proofDepth2: UInt32, proofHash1: Data, proofHash2: Data) {
     let reader = Slice(bits: bits)
 
     // type + hash + hash + depth + depth
@@ -520,7 +524,10 @@ func exoticMerkleUpdate(bits: Bitstring, refs: [Cell]) throws -> (proofDepth1: U
     }
 
     if proofHash1 != refs[0].hash(level: 0) {
-        throw TonError.custom("Merkle Update cell ref hash must be exactly \(proofHash1.hexString()), got \(refs[0].hash(level: 0).hexString())")
+        throw TonError
+            .custom(
+                "Merkle Update cell ref hash must be exactly \(proofHash1.hexString()), got \(refs[0].hash(level: 0).hexString())"
+            )
     }
 
     if proofDepth2 != refs[1].depth(level: 0) {
@@ -528,7 +535,10 @@ func exoticMerkleUpdate(bits: Bitstring, refs: [Cell]) throws -> (proofDepth1: U
     }
 
     if proofHash2 != refs[1].hash(level: 0) {
-        throw TonError.custom("Merkle Update cell ref hash must be exactly \(proofHash2.hexString()), got \(refs[1].hash(level: 0).hexString())")
+        throw TonError
+            .custom(
+                "Merkle Update cell ref hash must be exactly \(proofHash2.hexString()), got \(refs[1].hash(level: 0).hexString())"
+            )
     }
 
     return (proofDepth1, proofDepth2, proofHash1, proofHash2)
@@ -571,47 +581,51 @@ func exoticMerkleProof(bits: Bitstring, refs: [Cell]) throws -> (proofDepth: UIn
     return (proofDepth, proofHash)
 }
 
+// MARK: - LevelMask
+
 public struct LevelMask {
     private var _mask: UInt32 = 0
     private var _hashIndex: UInt32
     private var _hashCount: UInt32
     
     public init(mask: UInt32 = 0) {
-        self._mask = mask
-        self._hashIndex = countSetBits(self._mask)
-        self._hashCount = self._hashIndex + 1
+        _mask = mask
+        _hashIndex = countSetBits(_mask)
+        _hashCount = _hashIndex + 1
     }
     
     public var value: UInt32 {
-        return _mask
+        _mask
     }
     
     public var level: UInt32 {
-        return UInt32(32 - _mask.leadingZeroBitCount)
+        UInt32(32 - _mask.leadingZeroBitCount)
     }
     
     public var hashIndex: UInt32 {
-        return _hashIndex
+        _hashIndex
     }
     
     public var hashCount: UInt32 {
-        return _hashCount
+        _hashCount
     }
     
     public func apply(level: UInt32) -> LevelMask {
-        return LevelMask(mask: _mask & ((1 << level) - 1))
+        LevelMask(mask: _mask & ((1 << level) - 1))
     }
     
     public func isSignificant(level: UInt32) -> Bool {
-        return level == 0 || (_mask >> (level - 1)) % 2 != 0
+        level == 0 || (_mask >> (level - 1)) % 2 != 0
     }
 }
 
+// MARK: Hashable
+
 extension LevelMask: Hashable {
     public static func == (lhs: LevelMask, rhs: LevelMask) -> Bool {
-        return lhs._mask == rhs._mask &&
-        lhs._hashIndex == rhs._hashIndex &&
-        lhs._hashCount == rhs._hashCount
+        lhs._mask == rhs._mask &&
+            lhs._hashIndex == rhs._hashIndex &&
+            lhs._hashCount == rhs._hashCount
     }
     
     public func hash(into hasher: inout Hasher) {
@@ -635,5 +649,5 @@ func countSetBits(_ n: UInt32) -> UInt32 {
 /// denotes the subtype of the natural numbers type #, consisting of integers 0 . . . p;
 /// it is serialized into ⌈log2(p + 1)⌉ bits as an unsigned big-endian integer.
 public func bitsForInt(_ n: Int) -> Int {
-    return Int(ceil(log2(Double(n + 1))))
+    Int(ceil(log2(Double(n + 1))))
 }

@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - ExternalAddress
+
 /// External address TL-B definition:
 /// ```
 /// addr_extern$01 len:(## 9) external_address:(bits len) = MsgAddressExt;
@@ -12,7 +14,7 @@ public struct ExternalAddress {
     }
 
     public func toString() -> String {
-        return "External<\(value.length):\(value.toString())>"
+        "External<\(value.length):\(value.toString())>"
     }
     
     public static func mock(seed: String) throws -> Self {
@@ -21,15 +23,17 @@ public struct ExternalAddress {
     }
 }
 
+// MARK: CellCodable
+
 extension ExternalAddress: CellCodable {
     public func storeTo(builder: Builder) throws {
         try builder.store(uint: 1, bits: 2)
-        try builder.store(uint: self.value.length, bits: 9)
-        try builder.store(bits: self.value)
+        try builder.store(uint: value.length, bits: 9)
+        try builder.store(bits: value)
     }
     
     public static func loadFrom(slice: Slice) throws -> ExternalAddress {
-        return try slice.tryLoad { s in
+        try slice.tryLoad { s in
             let type = try s.loadUint(bits: 2)
             if type != 1 {
                 throw TonError.custom("Invalid ExternalAddress")

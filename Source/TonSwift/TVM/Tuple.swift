@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 public enum Tuple {
     case tuple(items: [Tuple])

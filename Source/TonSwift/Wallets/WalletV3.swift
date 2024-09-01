@@ -1,10 +1,14 @@
-import Foundation
 import BigInt
+import Foundation
 import TweetNacl
+
+// MARK: - WalletContractV3Revision
 
 public enum WalletContractV3Revision {
     case r1, r2
 }
+
+// MARK: - WalletV3
 
 public final class WalletV3: WalletContract {
     public let workchain: Int8
@@ -24,14 +28,14 @@ public final class WalletV3: WalletContract {
             self.walletId = 698983191 + UInt64(workchain)
         }
         
-        var bocString: String
-        switch revision {
-        case .r1:
-            bocString = "te6cckEBAQEAYgAAwP8AIN0gggFMl7qXMO1E0NcLH+Ck8mCDCNcYINMf0x/TH/gjE7vyY+1E0NMf0x/T/9FRMrryoVFEuvKiBPkBVBBV+RDyo/gAkyDXSpbTB9QC+wDo0QGkyMsfyx/L/8ntVD++buA="
+        let bocString =
+            switch revision {
+            case .r1:
+                "te6cckEBAQEAYgAAwP8AIN0gggFMl7qXMO1E0NcLH+Ck8mCDCNcYINMf0x/TH/gjE7vyY+1E0NMf0x/T/9FRMrryoVFEuvKiBPkBVBBV+RDyo/gAkyDXSpbTB9QC+wDo0QGkyMsfyx/L/8ntVD++buA="
             
-        case .r2:
-            bocString = "te6cckEBAQEAcQAA3v8AIN0gggFMl7ohggEznLqxn3Gw7UTQ0x/THzHXC//jBOCk8mCDCNcYINMf0x/TH/gjE7vyY+1E0NMf0x/T/9FRMrryoVFEuvKiBPkBVBBV+RDyo/gAkyDXSpbTB9QC+wDo0QGkyMsfyx/L/8ntVBC9ba0="
-        }
+            case .r2:
+                "te6cckEBAQEAcQAA3v8AIN0gggFMl7ohggEznLqxn3Gw7UTQ0x/THzHXC//jBOCk8mCDCNcYINMf0x/TH/gjE7vyY+1E0NMf0x/T/9FRMrryoVFEuvKiBPkBVBBV+RDyo/gAkyDXSpbTB9QC+wDo0QGkyMsfyx/L/8ntVBC9ba0="
+            }
         
         let cell = try Cell.fromBoc(src: Data(base64Encoded: bocString)!)[0]
         let data = try Builder()
@@ -39,10 +43,10 @@ public final class WalletV3: WalletContract {
             .store(uint: self.walletId, bits: 32)
         try data.store(data: publicKey)
         
-        self.stateInit = StateInit(code: cell, data: try data.endCell())
+        stateInit = StateInit(code: cell, data: try data.endCell())
     }
     
-    public func createTransfer(args: WalletTransferData, messageType: MessageType = .ext) throws -> WalletTransfer {
+    public func createTransfer(args: WalletTransferData, messageType _: MessageType = .ext) throws -> WalletTransfer {
         guard args.messages.count <= 4 else {
             throw TonError.custom("Maximum number of messages in a single transfer is 4")
         }

@@ -1,26 +1,26 @@
 import Foundation
 
-/*
- Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L132
- int_msg_info$0 ihr_disabled:Bool
-                bounce:Bool
-                bounced:Bool
-                src:MsgAddress
-                dest:MsgAddressInt
-                value:CurrencyCollection
-                ihr_fee:Grams
-                fwd_fee:Grams
-                created_lt:uint64
-                created_at:uint32 = CommonMsgInfoRelaxed;
- 
- 
- 
- 
- ext_out_msg_info$11 src:MsgAddress
-                     dest:MsgAddressExt
-                     created_lt:uint64
-                     created_at:uint32 = CommonMsgInfoRelaxed;
- */
+// MARK: - CommonMsgInfoRelaxedInternal
+
+// Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L132
+// int_msg_info$0 ihr_disabled:Bool
+//               bounce:Bool
+//               bounced:Bool
+//               src:MsgAddress
+//               dest:MsgAddressInt
+//               value:CurrencyCollection
+//               ihr_fee:Grams
+//               fwd_fee:Grams
+//               created_lt:uint64
+//               created_at:uint32 = CommonMsgInfoRelaxed;
+//
+//
+//
+//
+// ext_out_msg_info$11 src:MsgAddress
+//                    dest:MsgAddressExt
+//                    created_lt:uint64
+//                    created_at:uint32 = CommonMsgInfoRelaxed;
 
 public struct CommonMsgInfoRelaxedInternal {
     public let ihrDisabled: Bool
@@ -35,12 +35,16 @@ public struct CommonMsgInfoRelaxedInternal {
     public let createdAt: UInt32
 }
 
+// MARK: - CommonMsgInfoRelaxedExternalOut
+
 public struct CommonMsgInfoRelaxedExternalOut {
     public let src: AnyAddress
     public let dest: ExternalAddress?
     public let createdLt: UInt64
     public let createdAt: UInt32
 }
+
+// MARK: - CommonMsgInfoRelaxed
 
 public enum CommonMsgInfoRelaxed: CellCodable {
     case internalInfo(info: CommonMsgInfoRelaxedInternal)
@@ -113,8 +117,8 @@ public enum CommonMsgInfoRelaxed: CellCodable {
             try builder.store(uint: UInt64(info.createdAt), bits: 32)
             
         case .externalOutInfo(let info):
-            try builder.store(bit:true)
-            try builder.store(bit:true)
+            try builder.store(bit: true)
+            try builder.store(bit: true)
             try builder.store(info.src)
             try builder.store(AnyAddress(info.dest))
             try builder.store(uint: info.createdLt, bits: 64)

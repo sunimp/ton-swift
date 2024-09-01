@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - ADNLAddress
+
 struct ADNLAddress {
     static func parseFriendly(_ src: String) throws -> ADNLAddress {
         if src.count != 55 {
@@ -12,12 +14,12 @@ struct ADNLAddress {
         }
 
         let gotHash = decoded[33...].bytes
-        let hash = decoded[0..<33].bytes.crc16()
+        let hash = decoded[0 ..< 33].bytes.crc16()
         if !hash.bytes.elementsEqual(gotHash) {
             throw TonError.custom("Invalid address")
         }
 
-        return try ADNLAddress(address: decoded[1..<33].bytes)
+        return try ADNLAddress(address: decoded[1 ..< 33].bytes)
     }
 
     static func parseRaw(_ src: String) throws -> ADNLAddress {
@@ -37,11 +39,11 @@ struct ADNLAddress {
     }
     
     func toRaw() -> String {
-        return address.map { String(format: "%02X", $0) }.joined().uppercased()
+        address.map { String(format: "%02X", $0) }.joined().uppercased()
     }
 
     func toString() -> String {
-        var data = Data([0x2D]) + self.address
+        var data = Data([0x2D]) + address
         let hash = data.crc16()
         data = data + hash
         
@@ -50,9 +52,10 @@ struct ADNLAddress {
 
 }
 
-// MARK: - Equatable
+// MARK: Equatable
+
 extension ADNLAddress: Equatable {
     static func == (lhs: ADNLAddress, rhs: ADNLAddress) -> Bool {
-        return lhs.address == rhs.address
+        lhs.address == rhs.address
     }
 }

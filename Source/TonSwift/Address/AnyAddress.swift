@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - AnyAddress
+
 /// Represents `MsgAddress` structure per TL-B definition:
 /// Note that in TON optional address is represented by MsgAddressExt and not as you'd expect `(Maybe Address)`.
 /// ```
@@ -24,6 +26,7 @@ public enum AnyAddress {
     init(_ addr: Address) {
         self = .internalAddr(addr)
     }
+
     init(_ maybeAddr: Address?) {
         if let addr = maybeAddr {
             self = .internalAddr(addr)
@@ -47,21 +50,23 @@ public enum AnyAddress {
     /// Converts to an optional internal address. Throws error if it is an external address.
     public func asInternal() throws -> Address? {
         switch self {
-        case .none: return nil;
-        case .internalAddr(let addr): return addr;
-        case .externalAddr(_): throw TonError.custom("Expected internal address")
+        case .none: return nil
+        case .internalAddr(let addr): return addr
+        case .externalAddr: throw TonError.custom("Expected internal address")
         }
     }
     
     /// Converts to an external address. Throws error if it is an internal address.
     public func asExternal() throws -> ExternalAddress? {
         switch self {
-        case .none: return nil;
-        case .internalAddr(_): throw TonError.custom("Expected external address")
-        case .externalAddr(let addr): return addr;
+        case .none: return nil
+        case .internalAddr: throw TonError.custom("Expected external address")
+        case .externalAddr(let addr): return addr
         }
     }
 }
+
+// MARK: CellCodable
 
 extension AnyAddress: CellCodable {
     public func storeTo(builder: Builder) throws {
@@ -69,9 +74,11 @@ extension AnyAddress: CellCodable {
         case .none:
             try builder.store(uint: UInt64(0), bits: 2)
             break
+
         case .internalAddr(let addr):
             try addr.storeTo(builder: builder)
             break
+
         case .externalAddr(let addr):
             try addr.storeTo(builder: builder)
             break
@@ -82,14 +89,17 @@ extension AnyAddress: CellCodable {
         let type = try slice.preloadUint(bits: 2)
         switch type {
         case 0:
-            try slice.skip(2);
-            return .none;
+            try slice.skip(2)
+            return .none
+
         case 1:
-            return .externalAddr(try slice.loadType());
-        case 2,3:
-            return .internalAddr(try slice.loadType());
+            return .externalAddr(try slice.loadType())
+
+        case 2, 3:
+            return .internalAddr(try slice.loadType())
+
         default:
-            throw TonError.custom("Unreachable error");
+            throw TonError.custom("Unreachable error")
         }
     }
 }

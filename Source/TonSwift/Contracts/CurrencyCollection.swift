@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 /// Implements ExtraCurrencyCollection per TLB schema:
 ///
@@ -7,6 +7,8 @@ import BigInt
 /// extra_currencies$_ dict:(HashmapE 32 (VarUInteger 32)) = ExtraCurrencyCollection;
 /// ```
 public typealias ExtraCurrencyCollection = [UInt32: VarUInt248]
+
+// MARK: - CurrencyCollection
 
 /// Implements CurrencyCollection per TLB schema:
 ///

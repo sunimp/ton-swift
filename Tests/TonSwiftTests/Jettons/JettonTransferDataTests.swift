@@ -1,12 +1,12 @@
 //
 //  JettonTransferDataTests.swift
-//  
+//
 //
 //  Created by Grigory on 12.7.23..
 //
 
-import XCTest
 import BigInt
+import XCTest
 @testable import TonSwift
 
 final class JettonTransferDataTests: XCTestCase {
@@ -21,12 +21,14 @@ final class JettonTransferDataTests: XCTestCase {
             let comment = "Hello, this is a comment"
             let forwardPayload = try Builder().store(int: 0, bits: 32).writeSnakeData(Data(comment.utf8)).endCell()
             
-            return JettonTransferData(queryId: queryId,
-                                      amount: amount,
-                                      toAddress: toAddress,
-                                      responseAddress: responseAddress,
-                                      forwardAmount: forwardAmount,
-                                      forwardPayload: forwardPayload)
+            return JettonTransferData(
+                queryId: queryId,
+                amount: amount,
+                toAddress: toAddress,
+                responseAddress: responseAddress,
+                forwardAmount: forwardAmount,
+                forwardPayload: forwardPayload
+            )
         }
     }
 
@@ -49,10 +51,12 @@ final class JettonTransferDataTests: XCTestCase {
         let builder = Builder()
         let transferJettonDataCell = try builder.store(transferJettonData).endCell()
         
-        XCTAssertEqual(try transferJettonDataCell.toString(),
-                       """
-                       x{0F8A7EA5000000000000021F2F83A8011740C74E876FBD00C1F39161C9DF68563FC469A730CBF932D464EB819239084F001AAD4BD6DAA342C7D03C496083C01AEC31F1A457B8C993C62823E3713E11FD8184062B}
-                        x{0000000048656C6C6F2C2074686973206973206120636F6D6D656E74}
-                       """)
+        XCTAssertEqual(
+            try transferJettonDataCell.toString(),
+            """
+            x{0F8A7EA5000000000000021F2F83A8011740C74E876FBD00C1F39161C9DF68563FC469A730CBF932D464EB819239084F001AAD4BD6DAA342C7D03C496083C01AEC31F1A457B8C993C62823E3713E11FD8184062B}
+             x{0000000048656C6C6F2C2074686973206973206120636F6D6D656E74}
+            """
+        )
     }
 }

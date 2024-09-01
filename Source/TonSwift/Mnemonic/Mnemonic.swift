@@ -4,24 +4,22 @@ import TweetNacl
 public enum Mnemonic {
     public static let words = String.englishMnemonics
     
-    /**
-     Generate new mnemonic
-     
-     - Parameter wordsCount: number of words to generate
-     - Parameter password: mnemonic password
-     - returns: mnemonic string
-     */
+    /// Generate new mnemonic
+    ///
+    /// - Parameter wordsCount: number of words to generate
+    /// - Parameter password: mnemonic password
+    /// - returns: mnemonic string
     public static func mnemonicNew(wordsCount: Int = 24, password: String = "") -> [String] {
         var mnemonicArray: [String] = []
         
         while true {
             mnemonicArray = []
-            let rnd = [Int](repeating: 0, count: wordsCount).map({ _ in Int.random(in: 0..<Int.max) })
-            for i in 0..<wordsCount {
+            let rnd = [Int](repeating: 0, count: wordsCount).map({ _ in Int.random(in: 0 ..< Int.max) })
+            for i in 0 ..< wordsCount {
                 mnemonicArray.append(words[rnd[i] % (words.count - 1)])
             }
             
-            if password.count > 0 {
+            if !password.isEmpty {
                 if !isPasswordNeeded(mnemonicArray: mnemonicArray) {
                     continue
                 }
@@ -37,13 +35,11 @@ public enum Mnemonic {
         return mnemonicArray
     }
     
-    /**
-     Validate Mnemonic
-     
-     - Parameter mnemonicArray: mnemonic array
-     - Parameter password: mnemonic password
-     - returns: true for valid mnemonic
-     */
+    /// Validate Mnemonic
+    ///
+    /// - Parameter mnemonicArray: mnemonic array
+    /// - Parameter password: mnemonic password
+    /// - returns: true for valid mnemonic
     public static func mnemonicValidate(mnemonicArray: [String], password: String = "") -> Bool {
         let mnemonicArray = normalizeMnemonic(src: mnemonicArray)
         
@@ -53,7 +49,7 @@ public enum Mnemonic {
             }
         }
         
-        if password.count > 0 {
+        if !password.isEmpty {
             if !isPasswordNeeded(mnemonicArray: mnemonicArray) {
                 return false
             }
@@ -62,24 +58,20 @@ public enum Mnemonic {
         return isBasicSeed(entropy: mnemonicToEntropy(mnemonicArray: mnemonicArray, password: password))
     }
     
-    /**
-     Convert mnemonic to entropy
-     
-     - Parameter mnemonicArray: mnemonic array
-     - Parameter password: mnemonic password
-     - returns: 64 byte entropy
-     */
+    /// Convert mnemonic to entropy
+    ///
+    /// - Parameter mnemonicArray: mnemonic array
+    /// - Parameter password: mnemonic password
+    /// - returns: 64 byte entropy
     public static func mnemonicToEntropy(mnemonicArray: [String], password: String = "") -> Data {
-        return hmacSha512(phrase: mnemonicArray.joined(separator: " "), password: password)
+        hmacSha512(phrase: mnemonicArray.joined(separator: " "), password: password)
     }
     
-    /**
-     Convert mnemonic to seed
-     
-     - Parameter mnemonicArray: mnemonic array
-     - Parameter password: mnemonic password
-     - returns: 64 byte seed
-     */
+    /// Convert mnemonic to seed
+    ///
+    /// - Parameter mnemonicArray: mnemonic array
+    /// - Parameter password: mnemonic password
+    /// - returns: 64 byte seed
     public static func mnemonicToSeed(mnemonicArray: [String], password: String = "") -> Data {
         let entropy = mnemonicToEntropy(mnemonicArray: mnemonicArray, password: password)
         
@@ -89,13 +81,11 @@ public enum Mnemonic {
         return Data(pbkdf2Sha512(phrase: entropy, salt: saltData))
     }
     
-    /**
-     Convert mnemonic to HD seed
-     
-     - Parameter mnemonicArray: mnemonic array
-     - Parameter password: mnemonic password
-     - returns: 64 byte seed
-     */
+    /// Convert mnemonic to HD seed
+    ///
+    /// - Parameter mnemonicArray: mnemonic array
+    /// - Parameter password: mnemonic password
+    /// - returns: 64 byte seed
     public static func mnemonicToHDSeed(mnemonicArray: [String], password: String = "") -> Data {
         let entropy = mnemonicToEntropy(mnemonicArray: mnemonicArray, password: password)
         
@@ -127,19 +117,17 @@ public enum Mnemonic {
     }
     
     public static func normalizeMnemonic(src: [String]) -> [String] {
-        return src.map({ $0.lowercased() })
+        src.map({ $0.lowercased() })
     }
     
-    /**
-     Extract private key from mnemonic
-     
-     - Parameter mnemonicArray: mnemonic array
-     - Parameter password: mnemonic password
-     - returns: KeyPair
-     */
+    /// Extract private key from mnemonic
+    ///
+    /// - Parameter mnemonicArray: mnemonic array
+    /// - Parameter password: mnemonic password
+    /// - returns: KeyPair
     public static func mnemonicToPrivateKey(mnemonicArray: [String], password: String = "") throws -> KeyPair {
         let mnemonicArray = normalizeMnemonic(src: mnemonicArray)
-        let seed = mnemonicToSeed(mnemonicArray: mnemonicArray, password: password)[0..<32]
+        let seed = mnemonicToSeed(mnemonicArray: mnemonicArray, password: password)[0 ..< 32]
         
         do {
             let keyPair = try TweetNacl.NaclSign.KeyPair.keyPair(fromSeed: seed)
