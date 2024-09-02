@@ -1,23 +1,36 @@
+//
+//  Slice.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 import BigInt
 import Foundation
 
 /// `Slice` is a class that allows to read cell data (bits and refs), consuming it along the way.
 /// Once you have done reading and want to make sure all the data is consumed, call `endParse()`.
 public class Slice {
+    // MARK: Properties
 
     private var bitstring: Bitstring
     private var offset: Int
     private var refs: [Cell]
-    
 
+    // MARK: Computed Properties
+
+    // MARK: - Metrics
     
-    // MARK: - Initializers
-        
-    init(cell: Cell) {
-        bitstring = cell.bits
-        offset = 0
-        refs = cell.refs
+    /// Remaining unread refs in this slice.
+    public var remainingRefs: Int {
+        refs.count
     }
+    
+    /// Remaining unread bits in this slice.
+    public var remainingBits: Int {
+        bitstring.length - offset
+    }
+
+    // MARK: Lifecycle
 
     /// Allows initializing with bitstring
     public init(bits: Bitstring) {
@@ -33,34 +46,25 @@ public class Slice {
         offset = 0
         refs = []
     }
-    
+
+    // MARK: - Initializers
+        
+    init(cell: Cell) {
+        bitstring = cell.bits
+        offset = 0
+        refs = cell.refs
+    }
+
     /// Unchecked initializer for cloning
     private init(bitstring: Bitstring, offset: Int, refs: [Cell]) {
         self.bitstring = bitstring
         self.offset = offset
         self.refs = refs
     }
-    
-    
-    
-    // MARK: - Metrics
-    
-        
-    /// Remaining unread refs in this slice.
-    public var remainingRefs: Int {
-        refs.count
-    }
-    
-    /// Remaining unread bits in this slice.
-    public var remainingBits: Int {
-        bitstring.length - offset
-    }
-    
-    
-    
-    
+
+    // MARK: Functions
+
     // MARK: - Finalization
-    
     
     /// Checks if the cell is fully processed without unread bits or refs.
     public func endParse() throws {
@@ -98,10 +102,6 @@ public class Slice {
         try loadRemainder().toString()
     }
     
-    
-    
-    
-    
     // MARK: - Loading Generic Types
 
     /// Loads type T that implements interface Readable
@@ -114,7 +114,8 @@ public class Slice {
         try T.loadFrom(slice: clone())
     }
     
-    /// Loads optional type T via closure. Function reads one bit that indicates the presence of data. If the bit is set, the closure is called to read T.
+    /// Loads optional type T via closure. Function reads one bit that indicates the presence of data. If the bit is
+    /// set, the closure is called to read T.
     public func loadMaybe<T>(_ closure: (Slice) throws -> T) throws -> T? {
         if try loadBoolean() {
             try closure(self)
@@ -134,8 +135,6 @@ public class Slice {
         refs = tmpslice.refs
         return result
     }
-    
-    
     
     // MARK: - Loading Refs
     
@@ -173,10 +172,7 @@ public class Slice {
         }
     }
     
-    
-    
     // MARK: - Loading Dictionaries
-    
     
     /// Reads a dictionary from the slice.
     public func loadDict<T>() throws -> T where T: CellCodableDictionary {
@@ -188,11 +184,7 @@ public class Slice {
         try T.loadRootFrom(slice: self)
     }
 
-    
-    
-    
     // MARK: - Loading Bits
-    
     
     /// Advances cursor by the specified numbe rof bits.
     public func skip(_ bits: Int) throws {
@@ -253,45 +245,13 @@ public class Slice {
         try _preloadBuffer(bytes: bytes)
     }
 
-    
-
-    /// Load bit string that was padded to make it byte alligned. Used in BOC serialization
-    /// - parameter bytes: number of bytes to read
-    func loadPaddedBits(bits: Int) throws -> Bitstring {
-        // Check that number of bits is byte alligned
-        guard bits % 8 == 0 else {
-            throw TonError.custom("Invalid number of bits")
-        }
-        
-        // Skip padding
-        var length = bits
-        while true {
-            if try bitstring.at(offset + length - 1) == 1 {
-                length -= 1
-                break
-            } else {
-                length -= 1
-            }
-        }
-        
-        // Read substring
-        let substring = try bitstring.substring(offset: offset, length: length)
-        offset += bits
-        
-        return substring
-    }
-
-    
-    
-    
     // MARK: - Loading Integers
-    
     
     /// Load uint value
     /// - parameter bits: uint bits
     /// - returns read value as number
     public func loadUint(bits: Int) throws -> UInt64 {
-        UInt64(try loadUintBig(bits: bits))
+        try UInt64(loadUintBig(bits: bits))
     }
     
     /// Load uint value as bigint
@@ -362,12 +322,33 @@ public class Slice {
         }
     }
 
-    
-    
-    
-    
+    /// Load bit string that was padded to make it byte alligned. Used in BOC serialization
+    /// - parameter bytes: number of bytes to read
+    func loadPaddedBits(bits: Int) throws -> Bitstring {
+        // Check that number of bits is byte alligned
+        guard bits % 8 == 0 else {
+            throw TonError.custom("Invalid number of bits")
+        }
+        
+        // Skip padding
+        var length = bits
+        while true {
+            if try bitstring.at(offset + length - 1) == 1 {
+                length -= 1
+                break
+            } else {
+                length -= 1
+            }
+        }
+        
+        // Read substring
+        let substring = try bitstring.substring(offset: offset, length: length)
+        offset += bits
+        
+        return substring
+    }
+
     // MARK: - Loading Variable-Length Integers
-    
     
     /// Loads VarUInteger with a given `limit` in bytes.
     /// The integer must be at most `limit-1` bytes long.
@@ -375,7 +356,9 @@ public class Slice {
     func loadVarUint(limit: Int) throws -> UInt64 {
         if limit > 9 {
             throw TonError
-                .custom("VarUInteger \(limit) cannot store UInt64 (it occupies 8 bytes, so the largest type is VarUInteger 9)")
+                .custom(
+                    "VarUInteger \(limit) cannot store UInt64 (it occupies 8 bytes, so the largest type is VarUInteger 9)"
+                )
         }
         return try UInt64(loadVarUintBig(limit: limit))
     }
@@ -386,20 +369,13 @@ public class Slice {
     func loadVarUintBig(limit: Int) throws -> BigUInt {
         let bytesize = limit - 1
         let prefixbits = bitsForInt(bytesize)
-        let size = Int(try loadUint(bits: prefixbits))
+        let size = try Int(loadUint(bits: prefixbits))
         if size > bytesize {
             throw TonError.varUIntOutOfBounds(limit: limit, actualBits: size * 8)
         }
         return try loadUintBig(bits: size * 8)
     }
 
-    
-
-    
-    
-    
-    
-    
     // MARK: - Private methods
     
     /// Preload int from specific offset
@@ -427,7 +403,9 @@ public class Slice {
     }
 
     private func _preloadBigUint(bits: Int, offset: Int) throws -> BigUInt {
-        guard bits != 0 else { return 0 }
+        guard bits != 0 else {
+            return 0
+        }
         
         var res = BigUInt(0)
         for i in 0 ..< bits {
@@ -440,7 +418,9 @@ public class Slice {
     }
     
     private func _preloadInt(bits: Int, offset: Int) throws -> Int64 {
-        guard bits != 0 else { return 0 }
+        guard bits != 0 else {
+            return 0
+        }
         
         let sign = try bitstring.at(offset)
         var res = Int64(0)
@@ -458,7 +438,9 @@ public class Slice {
     }
     
     private func _preloadUint(bits: Int, offset: Int) throws -> UInt64 {
-        guard bits != 0 else { return 0 }
+        guard bits != 0 else {
+            return 0
+        }
         
         var res = UInt64(0)
         for i in 0 ..< bits {
@@ -477,7 +459,7 @@ public class Slice {
         
         var buf = Data(count: bytes)
         for i in 0 ..< bytes {
-            buf[i] = UInt8(try _preloadUint(bits: 8, offset: offset + i * 8))
+            buf[i] = try UInt8(_preloadUint(bits: 8, offset: offset + i * 8))
         }
         
         return buf

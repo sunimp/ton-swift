@@ -1,9 +1,19 @@
+//
+//  Mnemonic.swift
+//
+//  Created by Sun on 2023/4/2.
+//
+
 import Foundation
 import TweetNacl
 
 public enum Mnemonic {
+    // MARK: Static Properties
+
     public static let words = String.englishMnemonics
-    
+
+    // MARK: Static Functions
+
     /// Generate new mnemonic
     ///
     /// - Parameter wordsCount: number of words to generate
@@ -14,7 +24,7 @@ public enum Mnemonic {
         
         while true {
             mnemonicArray = []
-            let rnd = [Int](repeating: 0, count: wordsCount).map({ _ in Int.random(in: 0 ..< Int.max) })
+            let rnd = [Int](repeating: 0, count: wordsCount).map { _ in Int.random(in: 0 ..< Int.max) }
             for i in 0 ..< wordsCount {
                 mnemonicArray.append(words[rnd[i] % (words.count - 1)])
             }
@@ -117,7 +127,7 @@ public enum Mnemonic {
     }
     
     public static func normalizeMnemonic(src: [String]) -> [String] {
-        src.map({ $0.lowercased() })
+        src.map { $0.lowercased() }
     }
     
     /// Extract private key from mnemonic

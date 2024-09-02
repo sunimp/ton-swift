@@ -1,3 +1,9 @@
+//
+//  CommonMsgInfoRelaxed.swift
+//
+//  Created by Sun on 2023/3/13.
+//
+
 import Foundation
 
 // MARK: - CommonMsgInfoRelaxedInternal
@@ -49,10 +55,12 @@ public struct CommonMsgInfoRelaxedExternalOut {
 public enum CommonMsgInfoRelaxed: CellCodable {
     case internalInfo(info: CommonMsgInfoRelaxedInternal)
     case externalOutInfo(info: CommonMsgInfoRelaxedExternalOut)
-    
+
+    // MARK: Static Functions
+
     public static func loadFrom(slice: Slice) throws -> CommonMsgInfoRelaxed {
         // Internal message
-        if !(try slice.loadBoolean()) {
+        if try !(slice.loadBoolean()) {
             let ihrDisabled = try slice.loadBoolean()
             let bounce = try slice.loadBoolean()
             let bounced = try slice.loadBoolean()
@@ -62,7 +70,7 @@ public enum CommonMsgInfoRelaxed: CellCodable {
             let ihrFee = try slice.loadCoins()
             let forwardFee = try slice.loadCoins()
             let createdLt = try slice.loadUint(bits: 64)
-            let createdAt = UInt32(try slice.loadUint(bits: 32))
+            let createdAt = try UInt32(slice.loadUint(bits: 32))
             
             return CommonMsgInfoRelaxed.internalInfo(
                 info: .init(
@@ -81,29 +89,31 @@ public enum CommonMsgInfoRelaxed: CellCodable {
         }
         
         // External In message
-        if !(try slice.loadBoolean()) {
+        if try !(slice.loadBoolean()) {
             throw TonError.custom("External In message is not possible for CommonMessageInfoRelaxed")
         } else {
             // External Out mesage
             let src: AnyAddress = try slice.loadType()
             let dest: AnyAddress = try slice.loadType()
             let createdLt = try slice.loadUint(bits: 64)
-            let createdAt = UInt32(try slice.loadUint(bits: 32))
+            let createdAt = try UInt32(slice.loadUint(bits: 32))
             
-            return CommonMsgInfoRelaxed.externalOutInfo(
+            return try CommonMsgInfoRelaxed.externalOutInfo(
                 info: .init(
                     src: src,
-                    dest: try dest.asExternal(),
+                    dest: dest.asExternal(),
                     createdLt: createdLt,
                     createdAt: createdAt
                 )
             )
         }
     }
-    
+
+    // MARK: Functions
+
     public func storeTo(builder: Builder) throws {
         switch self {
-        case .internalInfo(let info):
+        case let .internalInfo(info):
             try builder.store(bit: false)
             try builder.store(bit: info.ihrDisabled)
             try builder.store(bit: info.bounce)
@@ -116,7 +126,7 @@ public enum CommonMsgInfoRelaxed: CellCodable {
             try builder.store(uint: info.createdLt, bits: 64)
             try builder.store(uint: UInt64(info.createdAt), bits: 32)
             
-        case .externalOutInfo(let info):
+        case let .externalOutInfo(info):
             try builder.store(bit: true)
             try builder.store(bit: true)
             try builder.store(info.src)

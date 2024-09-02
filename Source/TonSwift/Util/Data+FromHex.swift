@@ -1,3 +1,9 @@
+//
+//  Data+FromHex.swift
+//
+//  Created by Sun on 2023/2/2.
+//
+
 import Foundation
 
 extension Data {
@@ -21,5 +27,4 @@ extension Data {
         
         self = data
     }
-    
 }

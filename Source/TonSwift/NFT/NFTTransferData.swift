@@ -1,34 +1,26 @@
 //
 //  NFTTransferData.swift
 //
-//
-//  Created by Grigory on 25.8.23..
+//  Created by Sun on 2023/8/26.
 //
 
 import BigInt
 import Foundation
 
 public struct NFTTransferData: CellCodable {
-    public let queryId: UInt64
+    // MARK: Properties
+
+    public let queryID: UInt64
     public let newOwnerAddress: Address
     public let responseAddress: Address
     public let forwardAmount: BigUInt
     public let forwardPayload: Cell?
-    
-    public func storeTo(builder: Builder) throws {
-        try builder.store(uint: OpCodes.NFT_TRANSFER, bits: 32) // transfer op
-        try builder.store(uint: queryId, bits: 64)
-        try builder.store(AnyAddress(newOwnerAddress))
-        try builder.store(AnyAddress(responseAddress))
-        try builder.store(bit: false) // null custom_payload
-        try builder.store(coins: Coins(forwardAmount.magnitude))
-        try builder.store(bit: forwardPayload != nil) // forward_payload in this slice - false, separate cell - true
-        try builder.storeMaybe(ref: forwardPayload)
-    }
-    
+
+    // MARK: Static Functions
+
     public static func loadFrom(slice: Slice) throws -> NFTTransferData {
         try slice.skip(32)
-        let queryId = try slice.loadUint(bits: 64)
+        let queryID = try slice.loadUint(bits: 64)
         let newOwnerAddress: Address = try slice.loadType()
         let responseAddress: Address = try slice.loadType()
         try slice.skip(1)
@@ -39,11 +31,24 @@ public struct NFTTransferData: CellCodable {
             forwardPayload = payloadCell
         }
         return NFTTransferData(
-            queryId: queryId,
+            queryID: queryID,
             newOwnerAddress: newOwnerAddress,
             responseAddress: responseAddress,
             forwardAmount: forwardAmount,
             forwardPayload: forwardPayload
         )
+    }
+
+    // MARK: Functions
+
+    public func storeTo(builder: Builder) throws {
+        try builder.store(uint: OpCodes.NFT_TRANSFER, bits: 32) // transfer op
+        try builder.store(uint: queryID, bits: 64)
+        try builder.store(AnyAddress(newOwnerAddress))
+        try builder.store(AnyAddress(responseAddress))
+        try builder.store(bit: false) // null custom_payload
+        try builder.store(coins: Coins(forwardAmount.magnitude))
+        try builder.store(bit: forwardPayload != nil) // forward_payload in this slice - false, separate cell - true
+        try builder.storeMaybe(ref: forwardPayload)
     }
 }

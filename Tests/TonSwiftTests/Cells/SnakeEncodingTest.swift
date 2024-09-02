@@ -1,8 +1,13 @@
-import XCTest
+//
+//  SnakeEncodingTest.swift
+//
+//  Created by Sun on 2023/3/7.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class StringFromSliceTest: XCTestCase {
-    
     func testStringFromSlice() throws {
         // should serialize and parse strings
         let cases = [
@@ -13,8 +18,7 @@ final class StringFromSliceTest: XCTestCase {
         
         for c in cases {
             let cell = try c.toTonCell()
-            XCTAssertEqual(try (try cell.beginParse()).loadSnakeString(), c)
+            XCTAssertEqual(try (cell.beginParse()).loadSnakeString(), c)
         }
     }
-    
 }

@@ -1,3 +1,9 @@
+//
+//  FriendlyAddress.swift
+//
+//  Created by Sun on 2023/3/17.
+//
+
 import Foundation
 
 /// By default, addresses are bounceable for safety of TON transfers.
@@ -11,13 +17,19 @@ let testFlag: UInt8 = 0x80
 
 /// Address encoded in a friendly format
 public struct FriendlyAddress: Codable, Hashable {
+    // MARK: Properties
+
     public let isTestOnly: Bool
     public let isBounceable: Bool
     public let address: Address
-    
+
+    // MARK: Computed Properties
+
     var workchain: Int8 { address.workchain }
     var hash: Data { address.hash }
-        
+
+    // MARK: Lifecycle
+
     public init(string: String) throws {
         // Convert from url-friendly to true base64
         let string = string.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
@@ -56,7 +68,7 @@ public struct FriendlyAddress: Codable, Hashable {
         isBounceable = (tag == bounceableTag)
 
         let wc: Int8 =
-            if addr[1] == 0xff {
+            if addr[1] == 0xFF {
                 -1
             } else {
                 Int8(addr[1])
@@ -70,7 +82,9 @@ public struct FriendlyAddress: Codable, Hashable {
         isBounceable = bounceable
         self.address = address
     }
-        
+
+    // MARK: Functions
+
     public func toString(urlSafe: Bool = true) -> String {
         var tag = isBounceable ? bounceableTag : nonBounceableTag
         if isTestOnly {
@@ -93,7 +107,8 @@ public struct FriendlyAddress: Codable, Hashable {
         addrcrc[34...] = addr.crc16()
                 
         if urlSafe {
-            return addrcrc.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
+            return addrcrc.base64EncodedString().replacingOccurrences(of: "+", with: "-")
+                .replacingOccurrences(of: "/", with: "_")
         } else {
             return addrcrc.base64EncodedString()
         }

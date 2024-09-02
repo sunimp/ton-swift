@@ -1,8 +1,7 @@
 //
 //  NFTTransferMessage.swift
 //
-//
-//  Created by Grigory on 25.8.23..
+//  Created by Sun on 2023/9/3.
 //
 
 import BigInt
@@ -16,23 +15,24 @@ public enum NFTTransferMessage {
         to: Address,
         from: Address,
         forwardPayload: Cell?
-    ) throws -> MessageRelaxed {
+    ) throws
+        -> MessageRelaxed {
         let forwardAmount = BigUInt(stringLiteral: "1")
-        let queryId = UInt64(Date().timeIntervalSince1970)
+        let queryID = UInt64(Date().timeIntervalSince1970)
         
         let nftTransferData = NFTTransferData(
-            queryId: queryId,
+            queryID: queryID,
             newOwnerAddress: to,
             responseAddress: from,
             forwardAmount: forwardAmount,
             forwardPayload: forwardPayload
         )
         
-        return MessageRelaxed.internal(
+        return try MessageRelaxed.internal(
             to: nftAddress,
             value: nftTransferAmount,
             bounce: bounce,
-            body: try Builder().store(nftTransferData).endCell()
+            body: Builder().store(nftTransferData).endCell()
         )
     }
 }

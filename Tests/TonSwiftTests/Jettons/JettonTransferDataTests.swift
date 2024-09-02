@@ -1,19 +1,19 @@
 //
 //  JettonTransferDataTests.swift
 //
-//
-//  Created by Grigory on 12.7.23..
+//  Created by Sun on 2023/7/12.
 //
 
 import BigInt
-import XCTest
 @testable import TonSwift
+import XCTest
 
 final class JettonTransferDataTests: XCTestCase {
+    // MARK: Computed Properties
 
     private var transferJettonData: JettonTransferData {
         get throws {
-            let queryId: UInt64 = 543
+            let queryID: UInt64 = 543
             let amount = BigUInt(stringLiteral: "63546")
             let toAddress = Address.mock(workchain: 0, seed: "toAddressSeed")
             let responseAddress = Address.mock(workchain: 0, seed: "responseAddressSeed")
@@ -22,7 +22,7 @@ final class JettonTransferDataTests: XCTestCase {
             let forwardPayload = try Builder().store(int: 0, bits: 32).writeSnakeData(Data(comment.utf8)).endCell()
             
             return JettonTransferData(
-                queryId: queryId,
+                queryID: queryID,
                 amount: amount,
                 toAddress: toAddress,
                 responseAddress: responseAddress,
@@ -32,6 +32,8 @@ final class JettonTransferDataTests: XCTestCase {
         }
     }
 
+    // MARK: Functions
+
     func testJettonTransferDataEncodeAndDecode() throws {
         let builder = Builder()
         let transferJettonDataCell = try builder.store(transferJettonData).endCell()
@@ -39,7 +41,7 @@ final class JettonTransferDataTests: XCTestCase {
         
         let transferJettonData = try transferJettonData
         
-        XCTAssertEqual(transferJettonData.queryId, decodedJettonTransferData.queryId)
+        XCTAssertEqual(transferJettonData.queryID, decodedJettonTransferData.queryID)
         XCTAssertEqual(transferJettonData.amount, decodedJettonTransferData.amount)
         XCTAssertEqual(transferJettonData.toAddress, decodedJettonTransferData.toAddress)
         XCTAssertEqual(transferJettonData.responseAddress, decodedJettonTransferData.responseAddress)

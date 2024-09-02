@@ -1,3 +1,9 @@
+//
+//  CRC.swift
+//
+//  Created by Sun on 2023/3/13.
+//
+
 import Foundation
 
 extension Data {
@@ -17,8 +23,8 @@ extension Data {
                 }
                 
                 mask >>= 1
-                if reg > 0xffff {
-                    reg &= 0xffff
+                if reg > 0xFFFF {
+                    reg &= 0xFFFF
                     reg ^= poly
                 }
             }
@@ -31,8 +37,8 @@ extension Data {
     }
     
     func crc32c() -> Data {
-        let poly: UInt32 = 0x82f63b78
-        var crc: UInt32 = 0 ^ 0xffffffff
+        let poly: UInt32 = 0x82F63B78
+        var crc: UInt32 = 0 ^ 0xFFFFFFFF
         
         for i in 0 ..< count {
             crc ^= UInt32(self[i])
@@ -45,7 +51,7 @@ extension Data {
             crc = ((crc & 1) != 0) ? (crc >> 1) ^ poly : crc >> 1
             crc = ((crc & 1) != 0) ? (crc >> 1) ^ poly : crc >> 1
         }
-        crc = crc ^ 0xffffffff
+        crc = crc ^ 0xFFFFFFFF
 
         var res = Data(count: 4)
         res.withUnsafeMutableBytes { (resPointer: UnsafeMutableRawBufferPointer) -> Void in

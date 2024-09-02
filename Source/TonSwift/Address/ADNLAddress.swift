@@ -1,15 +1,37 @@
+//
+//  ADNLAddress.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 import Foundation
 
 // MARK: - ADNLAddress
 
 struct ADNLAddress {
+    // MARK: Properties
+
+    let address: Data
+
+    // MARK: Lifecycle
+
+    init(address: Data) throws {
+        if address.count != 32 {
+            throw TonError.custom("Invalid address")
+        }
+        
+        self.address = address
+    }
+
+    // MARK: Static Functions
+
     static func parseFriendly(_ src: String) throws -> ADNLAddress {
         if src.count != 55 {
             throw TonError.custom("Invalid address")
         }
 
         let decoded = try "f\(src)".fromBase32()
-        if decoded[0] != 0x2d {
+        if decoded[0] != 0x2D {
             throw TonError.custom("Invalid address")
         }
 
@@ -28,16 +50,8 @@ struct ADNLAddress {
         return try ADNLAddress(address: data!)
     }
 
-    let address: Data
-    
-    init(address: Data) throws {
-        if address.count != 32 {
-            throw TonError.custom("Invalid address")
-        }
-        
-        self.address = address
-    }
-    
+    // MARK: Functions
+
     func toRaw() -> String {
         address.map { String(format: "%02X", $0) }.joined().uppercased()
     }
@@ -49,7 +63,6 @@ struct ADNLAddress {
         
         return String(data.toBase32().dropFirst())
     }
-
 }
 
 // MARK: Equatable

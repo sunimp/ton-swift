@@ -1,16 +1,25 @@
+//
+//  WalletContractV2Test.swift
+//
+//  Created by Sun on 2023/3/27.
+//
+
 import BigInt
+@testable import TonSwift
 import TweetNacl
 import XCTest
-@testable import TonSwift
 
 final class WalletContractV2Test: XCTestCase {
-    
+    // MARK: Properties
+
     private let publicKey = Data(hex: "5754865e86d0ade1199301bbb0319a25ed6b129c4b0a57f28f62449b3df9c522")!
     private let secretKey =
         Data(
             hex: "34aebb9ea454967f16c407c0f8877763e86212116468169d93a3dcbcafe530c95754865e86d0ade1199301bbb0319a25ed6b129c4b0a57f28f62449b3df9c522"
         )!
-    
+
+    // MARK: Functions
+
     func testR1() throws {
         let contractR1 = try WalletV2(workchain: 0, publicKey: publicKey, revision: .r1)
         
@@ -24,7 +33,7 @@ final class WalletContractV2Test: XCTestCase {
             "x{FF0020DD2082014C97BA9730ED44D0D70B1FE0A4F2608308D71820D31FD31F01F823BBF263ED44D0D31FD3FFD15131BAF2A103F901541042F910F2A2F800029320D74A96D307D402FB00E8D1A4C8CB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR1.createTransfer(args: try args())
+        let transfer = try contractR1.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(try cell.toString(), """
@@ -45,14 +54,14 @@ final class WalletContractV2Test: XCTestCase {
             "x{FF0020DD2082014C97BA218201339CBAB19C71B0ED44D0D31FD70BFFE304E0A4F2608308D71820D31FD31F01F823BBF263ED44D0D31FD3FFD15131BAF2A103F901541042F910F2A2F800029320D74A96D307D402FB00E8D1A4C8CB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR2.createTransfer(args: try args())
+        let transfer = try contractR2.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(try cell.toString(), """
             x{6DC1459A6FF72EEE1384045986E70817819D4AF22F0F05CBF932927D1887C3CC68F624CD310132C32DE03941BF40AFC6917AA4579BB1CFDB2C4A390476D51C01}
             """)
     }
-    
+
     private func args() throws -> WalletTransferData {
         try WalletTransferData(
             seqno: 62,

@@ -1,3 +1,9 @@
+//
+//  Base32.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 import Foundation
 
 private let alphabet = "abcdefghijklmnopqrstuvwxyz234567"

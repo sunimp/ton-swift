@@ -1,8 +1,13 @@
-import XCTest
+//
+//  SliceTest.swift
+//
+//  Created by Sun on 2023/2/1.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class SliceTest: XCTestCase {
-    
     func testSlice() throws {
         // should read uints from slice
         for _ in 0 ..< 1000 {
@@ -29,5 +34,4 @@ final class SliceTest: XCTestCase {
             // TODO: - create tests for int, varUint, varInt, coins, address
         }
     }
-
 }

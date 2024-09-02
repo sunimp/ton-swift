@@ -1,3 +1,9 @@
+//
+//  AnyAddress.swift
+//
+//  Created by Sun on 2023/3/17.
+//
+
 import Foundation
 
 // MARK: - AnyAddress
@@ -22,7 +28,9 @@ public enum AnyAddress {
     case none
     case internalAddr(Address)
     case externalAddr(ExternalAddress)
-    
+
+    // MARK: Lifecycle
+
     init(_ addr: Address) {
         self = .internalAddr(addr)
     }
@@ -46,12 +54,14 @@ public enum AnyAddress {
             self = .none
         }
     }
-    
+
+    // MARK: Functions
+
     /// Converts to an optional internal address. Throws error if it is an external address.
     public func asInternal() throws -> Address? {
         switch self {
         case .none: return nil
-        case .internalAddr(let addr): return addr
+        case let .internalAddr(addr): return addr
         case .externalAddr: throw TonError.custom("Expected internal address")
         }
     }
@@ -61,7 +71,7 @@ public enum AnyAddress {
         switch self {
         case .none: return nil
         case .internalAddr: throw TonError.custom("Expected external address")
-        case .externalAddr(let addr): return addr
+        case let .externalAddr(addr): return addr
         }
     }
 }
@@ -73,15 +83,12 @@ extension AnyAddress: CellCodable {
         switch self {
         case .none:
             try builder.store(uint: UInt64(0), bits: 2)
-            break
 
-        case .internalAddr(let addr):
+        case let .internalAddr(addr):
             try addr.storeTo(builder: builder)
-            break
 
-        case .externalAddr(let addr):
+        case let .externalAddr(addr):
             try addr.storeTo(builder: builder)
-            break
         }
     }
     
@@ -93,10 +100,11 @@ extension AnyAddress: CellCodable {
             return .none
 
         case 1:
-            return .externalAddr(try slice.loadType())
+            return try .externalAddr(slice.loadType())
 
-        case 2, 3:
-            return .internalAddr(try slice.loadType())
+        case 2,
+             3:
+            return try .internalAddr(slice.loadType())
 
         default:
             throw TonError.custom("Unreachable error")

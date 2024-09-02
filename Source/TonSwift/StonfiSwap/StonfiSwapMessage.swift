@@ -1,3 +1,9 @@
+//
+//  StonfiSwapMessage.swift
+//
+//  Created by Sun on 2024/5/7.
+//
+
 import BigInt
 import Foundation
 
@@ -12,8 +18,9 @@ public enum StonfiSwapMessage {
         referralAddress: Address? = nil,
         forwardAmount: BigUInt,
         attachedAmount: BigUInt
-    ) throws -> MessageRelaxed {
-        let queryId = UInt64(Date().timeIntervalSince1970)
+    ) throws
+        -> MessageRelaxed {
+        let queryID = UInt64(Date().timeIntervalSince1970)
         
         let stonfiSwapData = StonfiSwapData(
             assetToSwap: jettonToWalletAddress,
@@ -25,7 +32,7 @@ public enum StonfiSwapMessage {
         let stonfiSwapCell = try Builder().store(stonfiSwapData).endCell()
         
         let jettonTransferData = JettonTransferData(
-            queryId: queryId,
+            queryID: queryID,
             amount: offerAmount,
             toAddress: try! Address.parse(STONFI_CONSTANTS.RouterAddress),
             responseAddress: userWalletAddress,
@@ -34,12 +41,11 @@ public enum StonfiSwapMessage {
             customPayload: nil
         )
         
-        return MessageRelaxed.internal(
+        return try MessageRelaxed.internal(
             to: jettonFromWalletAddress,
             value: attachedAmount,
             bounce: true,
-            body: try Builder().store(jettonTransferData).endCell()
+            body: Builder().store(jettonTransferData).endCell()
         )
     }
 }
-

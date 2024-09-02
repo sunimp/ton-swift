@@ -1,19 +1,19 @@
 //
 //  NFTTransferDataTests.swift
 //
-//
-//  Created by Grigory on 25.8.23..
+//  Created by Sun on 2023/8/26.
 //
 
 import BigInt
-import XCTest
 @testable import TonSwift
+import XCTest
 
 final class NFTTransferDataTests: XCTestCase {
+    // MARK: Computed Properties
 
     private var nftTransferData: NFTTransferData {
         get throws {
-            let queryId: UInt64 = 543
+            let queryID: UInt64 = 543
             let newOwnerAddress = Address.mock(
                 workchain: 0,
                 seed: "newOwnerAddressSeed"
@@ -29,7 +29,7 @@ final class NFTTransferDataTests: XCTestCase {
                 .writeSnakeData(Data(comment.utf8)).endCell()
             
             return NFTTransferData(
-                queryId: queryId,
+                queryID: queryID,
                 newOwnerAddress: newOwnerAddress,
                 responseAddress: responseAddress,
                 forwardAmount: forwardAmount,
@@ -38,12 +38,14 @@ final class NFTTransferDataTests: XCTestCase {
         }
     }
 
+    // MARK: Functions
+
     func testJettonTransferDataEncodeAndDecode() throws {
         let builder = Builder()
         let nftTransferDataCell = try builder.store(nftTransferData).endCell()
         let decodedNFTTransferData: NFTTransferData = try Slice(cell: nftTransferDataCell).loadType()
 
-        XCTAssertEqual(try nftTransferData.queryId, decodedNFTTransferData.queryId)
+        XCTAssertEqual(try nftTransferData.queryID, decodedNFTTransferData.queryID)
         XCTAssertEqual(try nftTransferData.newOwnerAddress, decodedNFTTransferData.newOwnerAddress)
         XCTAssertEqual(try nftTransferData.responseAddress, decodedNFTTransferData.responseAddress)
         XCTAssertEqual(try nftTransferData.forwardAmount, decodedNFTTransferData.forwardAmount)
@@ -52,7 +54,7 @@ final class NFTTransferDataTests: XCTestCase {
     
     func testJettonTransferDataEncode() throws {
         let builder = Builder()
-        let nftTransferDataCell = try builder.store(try nftTransferData).endCell()
+        let nftTransferDataCell = try builder.store(nftTransferData).endCell()
 
         XCTAssertEqual(
             try nftTransferDataCell.toString(),

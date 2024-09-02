@@ -1,17 +1,25 @@
+//
+//  Boc.swift
+//
+//  Created by Sun on 2023/1/28.
+//
+
 import Foundation
 
 // MARK: - BocMagic
 
 enum BocMagic: UInt32 {
-    case V1 = 0x68ff65f3
-    case V2 = 0xacc3a728
-    case V3 = 0xb5ee9c72
+    case V1 = 0x68FF65F3
+    case V2 = 0xACC3A728
+    case V3 = 0xB5EE9C72
 }
 
 // MARK: - Boc
 
 /// BoC = Bag-of-Cells, data structure for efficient storage and transmission of a collection of cells.
 struct Boc {
+    // MARK: Properties
+
     let size: Int
     let offBytes: Int
     let cells: Int
@@ -21,20 +29,23 @@ struct Boc {
     let index: Data?
     let cellData: Data
     let rootIndices: [UInt64]
-    
+
+    // MARK: Lifecycle
+
     init(data: Data) throws {
         let reader = Slice(data: data)
-        guard let magic = BocMagic(rawValue: UInt32(try reader.loadUint(bits: 32))) else {
+        guard let magic = try BocMagic(rawValue: UInt32(reader.loadUint(bits: 32))) else {
             throw TonError.custom("Invalid magic")
         }
         switch magic {
-        case .V1, .V2:
-            size = Int(try reader.loadUint(bits: 8))
-            offBytes = Int(try reader.loadUint(bits: 8))
-            cells = Int(try reader.loadUint(bits: size * 8))
+        case .V1,
+             .V2:
+            size = try Int(reader.loadUint(bits: 8))
+            offBytes = try Int(reader.loadUint(bits: 8))
+            cells = try Int(reader.loadUint(bits: size * 8))
             rootsCount = try reader.loadUint(bits: size * 8) // Must be 1
             absent = try reader.loadUint(bits: size * 8)
-            totalCellSize = Int(try reader.loadUint(bits: offBytes * 8))
+            totalCellSize = try Int(reader.loadUint(bits: offBytes * 8))
             index = try reader.loadBytes(cells * offBytes)
             cellData = try reader.loadBytes(totalCellSize)
             rootIndices = [0]
@@ -47,25 +58,25 @@ struct Boc {
             }
 
         case .V3:
-            let hasIdx = try reader.loadBoolean()
+            let hasIDx = try reader.loadBoolean()
             let hasCrc32c = try reader.loadBoolean()
             let _ /* hasCacheBits */ = try reader.loadBoolean()
             let _ /* flags */ = try reader.loadUint(bits: 2) // Must be 0
-            size = Int(try reader.loadUint(bits: 3))
-            offBytes = Int(try reader.loadUint(bits: 8))
-            cells = Int(try reader.loadUint(bits: size * 8))
+            size = try Int(reader.loadUint(bits: 3))
+            offBytes = try Int(reader.loadUint(bits: 8))
+            cells = try Int(reader.loadUint(bits: size * 8))
             rootsCount = try reader.loadUint(bits: size * 8)
             absent = try reader.loadUint(bits: size * 8)
-            totalCellSize = Int(try reader.loadUint(bits: offBytes * 8))
+            totalCellSize = try Int(reader.loadUint(bits: offBytes * 8))
             var rootIndices: [UInt64] = []
                 
             for _ in 0 ..< rootsCount {
-                rootIndices.append(try reader.loadUint(bits: size * 8))
+                try rootIndices.append(reader.loadUint(bits: size * 8))
             }
                 
             self.rootIndices = rootIndices
                 
-            if hasIdx {
+            if hasIDx {
                 index = try reader.loadBytes(cells * offBytes)
             } else {
                 index = nil
@@ -113,7 +124,7 @@ func readCell(reader: Slice, sizeBytes: Int) throws -> (exotic: Bool, bits: Bits
     
     var refs: [UInt64] = []
     for _ in 0 ..< refsCount {
-        refs.append(try reader.loadUint(bits: sizeBytes * 8))
+        try refs.append(reader.loadUint(bits: sizeBytes * 8))
     }
     
     return (exotic: exotic, bits: bits, refs: refs)
@@ -177,11 +188,11 @@ func serializeBoc(root: Cell, idx: Bool, crc32: Bool) throws -> Data {
     let allCells = try topologicalSort(src: root)
     
     let cellsNum = allCells.count
-    let hasIdx = idx
+    let hasIDx = idx
     let hasCrc32c = crc32
     let hasCacheBits = false
     let flags: UInt32 = 0
-    let sizeBytes = max(Int(ceil(Double(try cellsNum.bitsCount(mode: .uint)) / 8.0)), 1)
+    let sizeBytes = try max(Int(ceil(Double(cellsNum.bitsCount(mode: .uint)) / 8.0)), 1)
     var totalCellSize = 0
     var index: [Int] = []
     
@@ -191,8 +202,8 @@ func serializeBoc(root: Cell, idx: Bool, crc32: Bool) throws -> Data {
         totalCellSize += sz
     }
     
-    let offsetBytes = max(Int(ceil(Double(try totalCellSize.bitsCount(mode: .uint)) / 8.0)), 1)
-    let hasIdxFactor = hasIdx ? (cellsNum * offsetBytes) : 0
+    let offsetBytes = try max(Int(ceil(Double(totalCellSize.bitsCount(mode: .uint)) / 8.0)), 1)
+    let hasIdxFactor = hasIDx ? (cellsNum * offsetBytes) : 0
     let totalSize = (
         4 + // magic
             1 + // flags and s_bytes
@@ -207,8 +218,8 @@ func serializeBoc(root: Cell, idx: Bool, crc32: Bool) throws -> Data {
 
     // Serialize
     var builder = Builder(capacity: totalSize)
-    try builder.store(uint: 0xb5ee9c72, bits: 32) // Magic
-    try builder.store(bit: hasIdx) // Has index
+    try builder.store(uint: 0xB5EE9C72, bits: 32) // Magic
+    try builder.store(bit: hasIDx) // Has index
     try builder.store(bit: hasCrc32c) // Has crc32c
     try builder.store(bit: hasCacheBits) // Has cache bits
     try builder.store(uint: flags, bits: 2) // Flags
@@ -220,7 +231,7 @@ func serializeBoc(root: Cell, idx: Bool, crc32: Bool) throws -> Data {
     try builder.store(uint: totalCellSize, bits: offsetBytes * 8) // Total cell size
     try builder.store(uint: 0, bits: sizeBytes * 8) // Root id == 0
 
-    if hasIdx {
+    if hasIDx {
         for i in 0 ..< cellsNum {
             try builder.store(uint: index[i], bits: offsetBytes * 8)
         }
@@ -236,7 +247,7 @@ func serializeBoc(root: Cell, idx: Bool, crc32: Bool) throws -> Data {
     }
 
     if hasCrc32c {
-        let crc32 = (try builder.alignedBitstring()).crc32c()
+        let crc32 = try (builder.alignedBitstring()).crc32c()
         try builder.store(data: crc32)
     }
 

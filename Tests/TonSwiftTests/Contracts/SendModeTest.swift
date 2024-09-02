@@ -1,8 +1,13 @@
-import XCTest
+//
+//  SendModeTest.swift
+//
+//  Created by Sun on 2023/3/10.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class SendModeTest: XCTestCase {
-
     func testSendModeEncoding() throws {
         XCTAssertEqual(SendMode().rawValue, 0)
         XCTAssertEqual(SendMode.walletDefault().rawValue, 3)

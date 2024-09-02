@@ -1,3 +1,9 @@
+//
+//  SendMode.swift
+//
+//  Created by Sun on 2023/3/7.
+//
+
 import Foundation
 
 // MARK: - SendMode
@@ -6,6 +12,8 @@ import Foundation
 /// paying fees and sending the value.
 /// This struct is a wrapper around sendmode flags that prevents accidental misuse.
 public struct SendMode {
+    // MARK: Properties
+
     /// Pays message fwd/ihr fees separately.
     /// If the flag is not set, those fees are subtracted from the message value.
     public let payMsgFees: Bool
@@ -17,11 +25,15 @@ public struct SendMode {
     /// Options for sending the value.
     public let value: SendValueOptions
 
+    // MARK: Lifecycle
+
     public init(payMsgFees: Bool = false, ignoreErrors: Bool = false, value: SendValueOptions = .messageValue) {
         self.payMsgFees = payMsgFees
         self.ignoreErrors = ignoreErrors
         self.value = value
     }
+
+    // MARK: Static Functions
 
     /// Standard flags for the wallet is to pay msg fees on behalf of the sender
     /// and ignore errors so that sequence number can be bumped securely,
@@ -54,8 +66,12 @@ extension SendMode: RawRepresentable {
 
     public var rawValue: UInt8 {
         var m: UInt8 = value.rawValue
-        if payMsgFees { m |= SendModePayMsgFees }
-        if ignoreErrors { m |= SendModeIgnoreErrors }
+        if payMsgFees {
+            m |= SendModePayMsgFees
+        }
+        if ignoreErrors {
+            m |= SendModeIgnoreErrors
+        }
         return m
     }
 }

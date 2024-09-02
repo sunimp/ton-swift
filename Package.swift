@@ -12,9 +12,9 @@ let package = Package(
         .library(name: "TonSwift", targets: ["TonSwift"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/attaswift/BigInt", .upToNextMajor(from: "5.0.0")),
-        .package(url: "https://github.com/sunimp/tweetnacl-swiftwrap", .upToNextMajor(from: "1.2.0")),
-        .package(url: "https://github.com/nicklockwood/SwiftFormat.git", from: "0.54.0"),
+        .package(url: "https://github.com/attaswift/BigInt", from: "5.4.1"),
+        .package(url: "https://github.com/sunimp/tweetnacl-swiftwrap", .upToNextMajor(from: "1.3.0")),
+        .package(url: "https://github.com/nicklockwood/SwiftFormat.git", from: "0.54.3"),
     ],
     targets: [
         .target(

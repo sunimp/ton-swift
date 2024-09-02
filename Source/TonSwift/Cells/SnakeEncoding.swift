@@ -1,10 +1,16 @@
+//
+//  SnakeEncoding.swift
+//
+//  Created by Sun on 2023/3/7.
+//
+
 import Foundation
 
 extension Slice {
     /// Loads snake-encoded String.
     /// Fails if the string is malformed or not a valid UTF-8 string.
     public func loadSnakeString() throws -> String {
-        guard let str = String(data: try loadSnakeData(), encoding: .utf8) else {
+        guard let str = try String(data: loadSnakeData(), encoding: .utf8) else {
             throw TonError.custom("Cannot read slice to string")
         }
         return str
@@ -33,7 +39,7 @@ extension Slice {
 
         // Read tail
         if remainingRefs == 1 {
-            res.append(try loadRef().beginParse().loadSnakeData())
+            try res.append(loadRef().beginParse().loadSnakeData())
         }
 
         return res
@@ -50,7 +56,7 @@ extension Builder {
                 let a = src.subdata(in: 0 ..< bytes)
                 let t = src.subdata(in: bytes ..< src.endIndex)
                 try store(data: a)
-                let cell = try (try Builder().writeSnakeData(t)).endCell()
+                let cell = try (Builder().writeSnakeData(t)).endCell()
                 try store(ref: cell)
             } else {
                 try store(data: src)
@@ -71,4 +77,3 @@ extension String {
         try Builder().writeSnakeData(Data(utf8)).endCell()
     }
 }
-

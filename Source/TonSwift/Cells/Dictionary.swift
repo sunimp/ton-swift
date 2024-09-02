@@ -1,3 +1,9 @@
+//
+//  Dictionary.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 import Foundation
 
 // MARK: - CellCodableDictionary
@@ -24,7 +30,6 @@ extension Dictionary: CellCodable where Key: CellCodable & StaticSize, Value: Ce
 // MARK: - Dictionary + CellCodableDictionary
 
 extension Dictionary: CellCodableDictionary where Key: CellCodable & StaticSize, Value: CellCodable {
-    
     public func storeRootTo(builder: Builder) throws {
         try DictionaryCoder.default().storeRoot(map: self, builder: builder)
     }
@@ -62,37 +67,42 @@ extension Set: CellCodableDictionary where Element: CellCodable & StaticSize {
     }
 }
 
-
-
 // MARK: - DictionaryCoder
 
 /// Coder for the dictionaries that stores the coding rules for keys and values.
 /// Use this explicit API when working with dynamically-sized dictionary keys.
 /// In all other cases use `Dictionary<K,V>` type where the key size is known at compile time.
 public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
+    // MARK: Properties
+
     let keyLength: Int
     let keyCoder: K
     let valueCoder: V
-    
+
+    // MARK: Lifecycle
+
     init(keyLength: Int, _ keyCoder: K, _ valueCoder: V) {
         self.keyLength = keyLength
         self.keyCoder = keyCoder
         self.valueCoder = valueCoder
     }
 
+    // MARK: Static Functions
+
     static func `default`<KT, VT>() -> DictionaryCoder<K, V>
         where KT: CellCodable & StaticSize & Hashable,
         VT: CellCodable,
         K == DefaultCoder<KT>,
-        V == DefaultCoder<VT>
-    {
+        V == DefaultCoder<VT> {
         DictionaryCoder(
             keyLength: KT.bitWidth,
             DefaultCoder<KT>(),
             DefaultCoder<VT>()
         )
     }
-    
+
+    // MARK: Functions
+
     /// Loads dictionary from slice
     public func load(_ slice: Slice) throws -> [K.T: V.T] {
         let cell = try slice.loadMaybeRef()
@@ -112,7 +122,7 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
         try doParse(prefix: Builder(), slice: slice, n: keyLength, result: &map)
         return map
     }
-    
+
     func store(map: [K.T: V.T], builder: Builder) throws {
         if map.isEmpty {
             try builder.store(bit: 0)
@@ -120,7 +130,7 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
             try builder.store(bit: 1)
             let subcell = Builder()
             try storeRoot(map: map, builder: subcell)
-            try builder.store(ref: try subcell.endCell())
+            try builder.store(ref: subcell.endCell())
         }
     }
     
@@ -143,7 +153,7 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
         let rootEdge = try buildEdge(paddedMap)
         try writeEdge(src: rootEdge, keyLength: keyLength, valueCoder: valueCoder, to: builder)
     }
-    
+
     private func doParse(prefix: Builder, slice: Slice, n: Int, result: inout [K.T: V.T]) throws {
         // Reading label
         let k = bitsForInt(n)
@@ -153,17 +163,17 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
         if try slice.loadBit() == 0 {
             // Read
             pfxlen = try Unary.loadFrom(slice: slice).value
-            try prefix.store(bits: try slice.loadBits(pfxlen))
+            try prefix.store(bits: slice.loadBits(pfxlen))
         } else {
             // long mode: $10
             if try slice.loadBit() == 0 {
-                pfxlen = Int(try slice.loadUint(bits: k))
-                try prefix.store(bits: try slice.loadBits(pfxlen))
+                pfxlen = try Int(slice.loadUint(bits: k))
+                try prefix.store(bits: slice.loadBits(pfxlen))
                 // same mode: $11
             } else {
                 // Same label detected
                 let bit = try slice.loadBit()
-                pfxlen = Int(try slice.loadUint(bits: k))
+                pfxlen = try Int(slice.loadUint(bits: k))
                 try prefix.store(bit: bit, repeat: pfxlen)
             }
         }
@@ -193,8 +203,6 @@ public class DictionaryCoder<K: TypeCoder, V: TypeCoder> where K.T: Hashable {
     }
 }
 
-
-
 // MARK: - Node
 
 enum Node<T> {
@@ -205,9 +213,13 @@ enum Node<T> {
 // MARK: - Edge
 
 class Edge<T> {
+    // MARK: Properties
+
     let label: Bitstring
     let node: Node<T>
-    
+
+    // MARK: Lifecycle
+
     init(label: Bitstring, node: Node<T>) {
         self.label = label
         self.node = node
@@ -226,7 +238,8 @@ func removePrefixMap<T>(_ src: [Bitstring: T], _ length: Int) -> [Bitstring: T] 
     return res
 }
 
-/// Splits the dictionary by the value of the first bit of the keys. 0-prefixed keys go into left map, 1-prefixed keys go into the right one.
+/// Splits the dictionary by the value of the first bit of the keys. 0-prefixed keys go into left map, 1-prefixed keys
+/// go into the right one.
 /// First bit is removed from the keys.
 func forkMap<T>(_ src: [Bitstring: T]) throws -> (left: [Bitstring: T], right: [Bitstring: T]) {
     try invariant(!src.isEmpty)
@@ -252,16 +265,15 @@ func buildNode<T>(_ src: [Bitstring: T]) throws -> Node<T> {
         return .leaf(value: src.values.first!)
     } else {
         let (left, right) = try forkMap(src)
-        return .fork(left: try buildEdge(left), right: try buildEdge(right))
+        return try .fork(left: buildEdge(left), right: buildEdge(right))
     }
 }
 
 func buildEdge<T>(_ src: [Bitstring: T]) throws -> Edge<T> {
     try invariant(!src.isEmpty)
     let label = findCommonPrefix(src: Array(src.keys))
-    return Edge(label: label, node: try buildNode(removePrefixMap(src, label.length)))
+    return try Edge(label: label, node: buildNode(removePrefixMap(src, label.length)))
 }
-
 
 /// Deterministically produces optimal label type for a given label.
 /// This implementation is equivalent to the C++ reference implementation, and resolves the ties in the same way.
@@ -331,9 +343,10 @@ func writeLabel(src: Bitstring, keyLength: Int, to: Builder) throws {
     }
 }
 
-func writeNode<T, V>(src: Node<T>, keyLength: Int, valueCoder: V, to builder: Builder) throws where V: TypeCoder, V.T == T {
+func writeNode<T, V>(src: Node<T>, keyLength: Int, valueCoder: V, to builder: Builder) throws where V: TypeCoder,
+    V.T == T {
     switch src {
-    case .fork(let left, let right):
+    case let .fork(left, right):
         let leftCell = Builder()
         let rightCell = Builder()
         
@@ -343,7 +356,7 @@ func writeNode<T, V>(src: Node<T>, keyLength: Int, valueCoder: V, to builder: Bu
         try builder.store(ref: leftCell)
         try builder.store(ref: rightCell)
         
-    case .leaf(let value):
+    case let .leaf(value):
         try valueCoder.storeValue(value, to: builder)
     }
 }
@@ -379,5 +392,7 @@ func findCommonPrefix(src: some Collection<Bitstring>) -> Bitstring {
 }
 
 private func invariant(_ cond: Bool) throws {
-    if !cond { throw TonError.custom("Internal inconsistency") }
+    if !cond {
+        throw TonError.custom("Internal inconsistency")
+    }
 }

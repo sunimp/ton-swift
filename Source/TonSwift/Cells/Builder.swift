@@ -1,78 +1,26 @@
+//
+//  Builder.swift
+//
+//  Created by Sun on 2023/2/2.
+//
+
 import BigInt
 import Foundation
 
 public class Builder {
+    // MARK: Properties
+
     public let capacity: Int
-    private var _buffer: Data
-    private var _length: Int
     
     public private(set) var refs: [Cell]
-    
-    
-    
-    // MARK: - Initializers
-    
-        
-    /// Initialize the Builder with a given capacity.
-    /// Note: Builder can be used to construct larger bitstrings, not only 1023-bit Cells. E.g. to build a BoC.
-    public init(capacity: Int = BitsPerCell) {
-        self.capacity = capacity
-        _buffer = Data(count: (capacity + 7) / 8)
-        _length = 0
-        refs = []
-    }
-    
-    public convenience init(_ bits: Bitstring) throws {
-        self.init()
-        try store(bits: bits)
-    }
-    
-    private init(capacity: Int, buffer: Data, length: Int, refs: [Cell]) {
-        self.capacity = capacity
-        _buffer = buffer
-        _length = length
-        self.refs = refs
-    }
-    
-    
-    // MARK: - Finalization
-    
-    
-    /// Clones slice at its current state.
-    public func clone() -> Builder {
-        Builder(capacity: capacity, buffer: _buffer, length: _length, refs: refs)
-    }
-    
-    /// Completes cell
-    public func endCell() throws -> Cell {
-        let bits = Bitstring(data: _buffer, unchecked: (offset: 0, length: _length))
-        return try Cell(bits: bits, refs: refs)
-    }
-    
-    /// Same as `endCell`
-    public func asCell() throws -> Cell {
-        try endCell()
-    }
 
-    /// Converts builder into BitString
-    public func bitstring() -> Bitstring {
-        Bitstring(data: _buffer, unchecked: (offset: 0, length: _length))
-    }
-    
-    /// Converts to data if the bitstring contains a whole number of bytes.
-    /// If the bitstring is not byte-aligned, returns error.
-    public func alignedBitstring() throws -> Data {
-        if !aligned {
-            throw TonError.custom("Builder buffer is not byte-aligned")
-        }
-        return _buffer.subdata(in: 0 ... _length / 8)
-    }
-    
-    
-    
+    private var _buffer: Data
+    private var _length: Int
+
+    // MARK: Computed Properties
+
     // MARK: - Metrics
 
-    
     /// Returns whether the written bits are byte-aligned
     public var aligned: Bool {
         _length % 8 == 0
@@ -107,6 +55,65 @@ public class Builder {
     public var remainingMetrics: CellMetrics {
         CellMetrics(bitsCount: availableBits, refsCount: availableRefs)
     }
+
+    // MARK: Lifecycle
+
+    // MARK: - Initializers
+    
+    /// Initialize the Builder with a given capacity.
+    /// Note: Builder can be used to construct larger bitstrings, not only 1023-bit Cells. E.g. to build a BoC.
+    public init(capacity: Int = BitsPerCell) {
+        self.capacity = capacity
+        _buffer = Data(count: (capacity + 7) / 8)
+        _length = 0
+        refs = []
+    }
+    
+    public convenience init(_ bits: Bitstring) throws {
+        self.init()
+        try store(bits: bits)
+    }
+
+    private init(capacity: Int, buffer: Data, length: Int, refs: [Cell]) {
+        self.capacity = capacity
+        _buffer = buffer
+        _length = length
+        self.refs = refs
+    }
+
+    // MARK: Functions
+
+    // MARK: - Finalization
+    
+    /// Clones slice at its current state.
+    public func clone() -> Builder {
+        Builder(capacity: capacity, buffer: _buffer, length: _length, refs: refs)
+    }
+    
+    /// Completes cell
+    public func endCell() throws -> Cell {
+        let bits = Bitstring(data: _buffer, unchecked: (offset: 0, length: _length))
+        return try Cell(bits: bits, refs: refs)
+    }
+    
+    /// Same as `endCell`
+    public func asCell() throws -> Cell {
+        try endCell()
+    }
+
+    /// Converts builder into BitString
+    public func bitstring() -> Bitstring {
+        Bitstring(data: _buffer, unchecked: (offset: 0, length: _length))
+    }
+    
+    /// Converts to data if the bitstring contains a whole number of bytes.
+    /// If the bitstring is not byte-aligned, returns error.
+    public func alignedBitstring() throws -> Data {
+        if !aligned {
+            throw TonError.custom("Builder buffer is not byte-aligned")
+        }
+        return _buffer.subdata(in: 0 ... _length / 8)
+    }
     
     /// Tries to fit the cell with the given metrics and returns the remaining space.
     /// If the cell does not fit, returns `nil`.
@@ -121,9 +128,7 @@ public class Builder {
         }
     }
     
-    
     // MARK: - Storing Generic Types
-    
     
     /// Stores an object
     @discardableResult
@@ -145,10 +150,7 @@ public class Builder {
         return self
     }
     
-    
-    
     // MARK: - Storing Refs
-    
     
     /// Store reference
     /// - parameter cell: cell or builder to store
@@ -164,7 +166,7 @@ public class Builder {
 
     @discardableResult
     public func store(ref builder: Builder) throws -> Self {
-        try store(ref: try builder.endCell())
+        try store(ref: builder.endCell())
     }
     
     /// Store reference if not null
@@ -220,10 +222,7 @@ public class Builder {
         }
     }
     
-    
-    
     // MARK: - Storing Dictionaries
-    
     
     @discardableResult
     public func store(dict: any CellCodableDictionary) throws -> Self {
@@ -237,12 +236,8 @@ public class Builder {
         return self
     }
     
-    
-    
-    
     // MARK: - Storing Bits
     
-
     /// Write a single bit: the bit is set for positive values, not set for zero or negative
     @discardableResult
     public func store(bit: Bit) throws -> Self {
@@ -265,7 +260,9 @@ public class Builder {
     /// Write repeating bit a given number of times.
     @discardableResult
     public func store(bit: Bit, repeat count: Int) throws -> Self {
-        if count < 0 { throw TonError.custom("In store(bit:repeat:) repeat count must be non-negative.") }
+        if count < 0 {
+            throw TonError.custom("In store(bit:repeat:) repeat count must be non-negative.")
+        }
         for _ in 0 ..< count {
             try store(bit: bit)
         }
@@ -325,13 +322,7 @@ public class Builder {
         return self
     }
     
-    
-    
-    
-    
-    
     // MARK: - Storing Integers
-    
     
     /// Write uint value
     /// - parameter value: value as bigint or number
@@ -367,7 +358,7 @@ public class Builder {
                     throw TonError.custom("Value is out of range for \(bits) bits. Got \(value)")
                 }
                 _buffer[_length / 8] = UInt8(v >> 8)
-                _buffer[_length / 8 + 1] = UInt8(v & 0xff)
+                _buffer[_length / 8 + 1] = UInt8(v & 0xFF)
                 _length += 16
                 
                 return self
@@ -411,12 +402,11 @@ public class Builder {
         return self
     }
     
-    
     @discardableResult
     public func store(int value: any BinaryInteger, bits: Int) throws -> Self {
         try store(bigint: BigInt(value), bits: bits)
     }
-        
+
     @discardableResult
     func store(bigint value: BigInt, bits: Int) throws -> Self {
         var v = value
@@ -457,13 +447,7 @@ public class Builder {
         return self
     }
 
-    
-    
-    
-    
-    
     // MARK: - Storing Variable-Length Integers
-    
     
     /// Stores VarUInteger with a given `limit` in bytes.
     /// The integer must be at most `limit-1` bytes long.
@@ -507,12 +491,10 @@ public class Builder {
         
         return self
     }
-    
 
     private func checkCapacity(_ bits: Int) throws {
         if availableBits < bits || bits < 0 {
             throw TonError.custom("Builder overflow: need to write \(bits), but available \(availableBits)")
         }
     }
-
 }

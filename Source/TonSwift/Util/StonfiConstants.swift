@@ -1,3 +1,9 @@
+//
+//  StonfiConstants.swift
+//
+//  Created by Sun on 2024/5/7.
+//
+
 import BigInt
 
 // MARK: - DEX_VERSION
@@ -9,14 +15,8 @@ enum DEX_VERSION: String {
 // MARK: - STONFI_CONSTANTS
 
 public enum STONFI_CONSTANTS {
-    public static var RouterAddress: String {
-        "0:779dcc815138d9500e449c5291e7f12738c23d575b5310000f6a253bd607384e"
-    }
-  
-    public static var TONProxyAddress: String {
-        "0:8cdc1d7640ad5ee326527fc1ad0514f468b30dc84b0173f0e155f451b4e11f7c"
-    }
-  
+    // MARK: Nested Types
+
     public enum SWAP_JETTON_TO_JETTON {
         public static var GasAmount: BigUInt {
             BigUInt("265000000")
@@ -41,5 +41,15 @@ public enum STONFI_CONSTANTS {
         public static var ForwardGasAmount: BigUInt {
             BigUInt("215000000")
         }
+    }
+
+    // MARK: Static Computed Properties
+
+    public static var RouterAddress: String {
+        "0:779dcc815138d9500e449c5291e7f12738c23d575b5310000f6a253bd607384e"
+    }
+  
+    public static var TONProxyAddress: String {
+        "0:8cdc1d7640ad5ee326527fc1ad0514f468b30dc84b0173f0e155f451b4e11f7c"
     }
 }

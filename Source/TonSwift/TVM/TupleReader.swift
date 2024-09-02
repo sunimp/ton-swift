@@ -1,36 +1,56 @@
+//
+//  TupleReader.swift
+//
+//  Created by Sun on 2023/3/7.
+//
+
 import BigInt
 import Foundation
 
 public class TupleReader {
+    // MARK: Properties
+
     private var items: [Tuple]
-    
-    public init(items: [Tuple]) {
-        self.items = items
-    }
-    
+
+    // MARK: Computed Properties
+
     public var remaining: Int {
         items.count
     }
-    
+
+    // MARK: Lifecycle
+
+    public init(items: [Tuple]) {
+        self.items = items
+    }
+
+    // MARK: Functions
+
     public func peek() throws -> Tuple {
-        guard !items.isEmpty else { throw TonError.custom("EOF") }
+        guard !items.isEmpty else {
+            throw TonError.custom("EOF")
+        }
         return items[0]
     }
     
     @discardableResult
     public func pop() throws -> Tuple {
-        guard !items.isEmpty else { throw TonError.custom("EOF") }
+        guard !items.isEmpty else {
+            throw TonError.custom("EOF")
+        }
         return items.remove(at: 0)
     }
     
     public func skip(num: Int = 1) throws -> TupleReader {
-        for _ in 0 ..< num { try pop() }
+        for _ in 0 ..< num {
+            try pop()
+        }
         return self
     }
     
     public func readBigNumber() throws -> BigInt {
         let popped = try pop()
-        guard case .int(let value) = popped else {
+        guard case let .int(value) = popped else {
             throw TonError.custom("Not a number")
         }
         
@@ -43,7 +63,7 @@ public class TupleReader {
             return nil
         }
         
-        guard case .int(let value) = popped else {
+        guard case let .int(value) = popped else {
             throw TonError.custom("Not a number")
         }
         
@@ -51,7 +71,7 @@ public class TupleReader {
     }
     
     public func readNumber() throws -> UInt64 {
-        UInt64(try readBigNumber())
+        try UInt64(readBigNumber())
     }
     
     public func readNumberOpt() throws -> UInt64? {
@@ -90,11 +110,11 @@ public class TupleReader {
     
     public func readCell() throws -> Cell {
         let popped = try pop()
-        if case .cell(let cell) = popped {
+        if case let .cell(cell) = popped {
             return cell
-        } else if case .slice(let cell) = popped {
+        } else if case let .slice(cell) = popped {
             return cell
-        } else if case .builder(let cell) = popped {
+        } else if case let .builder(cell) = popped {
             return cell
         }
         
@@ -107,11 +127,11 @@ public class TupleReader {
             return nil
         }
         
-        if case .cell(let cell) = popped {
+        if case let .cell(cell) = popped {
             return cell
-        } else if case .slice(let cell) = popped {
+        } else if case let .slice(cell) = popped {
             return cell
-        } else if case .builder(let cell) = popped {
+        } else if case let .builder(cell) = popped {
             return cell
         }
         
@@ -120,7 +140,7 @@ public class TupleReader {
     
     public func readTuple() throws -> [Tuple] {
         let popped = try pop()
-        guard case .tuple(let items) = popped else {
+        guard case let .tuple(items) = popped else {
             throw TonError.custom("Not a tuple")
         }
         
@@ -133,7 +153,7 @@ public class TupleReader {
             return nil
         }
         
-        guard case .tuple(let items) = popped else {
+        guard case let .tuple(items) = popped else {
             throw TonError.custom("Not a tuple")
         }
         

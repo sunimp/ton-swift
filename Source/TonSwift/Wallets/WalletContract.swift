@@ -1,3 +1,9 @@
+//
+//  WalletContract.swift
+//
+//  Created by Sun on 2023/3/25.
+//
+
 import BigInt
 import Foundation
 
@@ -12,8 +18,11 @@ public protocol WalletContract: Contract {
 
 /// Message type (external | internal) to sign. Is using in v5 wallet contract
 public enum MessageType {
-    case int, ext
-    
+    case int
+    case ext
+
+    // MARK: Computed Properties
+
     var opCode: Int32 {
         switch self {
         case .int: OpCodes.SIGNED_INTERNAL
@@ -25,11 +34,15 @@ public enum MessageType {
 // MARK: - WalletTransferData
 
 public struct WalletTransferData {
+    // MARK: Properties
+
     public let seqno: UInt64
     public let messages: [MessageRelaxed]
     public let sendMode: SendMode
     public let timeout: UInt64?
-    
+
+    // MARK: Lifecycle
+
     public init(
         seqno: UInt64,
         messages: [MessageRelaxed],
@@ -46,20 +59,27 @@ public struct WalletTransferData {
 // MARK: - SignaturePosition
 
 public enum SignaturePosition {
-    case front, tail
+    case front
+    case tail
 }
 
 // MARK: - WalletTransfer
 
 public struct WalletTransfer {
+    // MARK: Properties
+
     public let signingMessage: Builder
     public let signaturePosition: SignaturePosition
-    
+
+    // MARK: Lifecycle
+
     public init(signingMessage: Builder, signaturePosition: SignaturePosition) {
         self.signingMessage = signingMessage
         self.signaturePosition = signaturePosition
     }
-    
+
+    // MARK: Functions
+
     public func signMessage(signer: WalletTransferSigner) throws -> Data {
         try signer.signMessage(signingMessage.endCell().hash())
     }

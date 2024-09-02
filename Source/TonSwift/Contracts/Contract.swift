@@ -1,3 +1,9 @@
+//
+//  Contract.swift
+//
+//  Created by Sun on 2023/3/13.
+//
+
 import BigInt
 import Foundation
 
@@ -40,13 +46,16 @@ public enum ContractStateStatus {
     case frozen(stateHash: Data?)
 }
 
-
 // MARK: - OpaqueContract
 
 public struct OpaqueContract: Contract {
+    // MARK: Properties
+
     public let workchain: Int8
     public let stateInit: StateInit
-    
+
+    // MARK: Lifecycle
+
     init(workchain: Int8, stateInit: StateInit) {
         self.workchain = workchain
         self.stateInit = stateInit

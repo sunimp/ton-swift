@@ -1,13 +1,18 @@
-import XCTest
+//
+//  CommonMessageInfoTest.swift
+//
+//  Created by Sun on 2023/3/13.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class CommonMessageInfoTest: XCTestCase {
-    
     func testCommonMessageInfo() throws {
         // should serialize external-in messages
-        let msg1 = CommonMsgInfo.externalInInfo(
+        let msg1 = try CommonMsgInfo.externalInInfo(
             info: .init(
-                src: try ExternalAddress.mock(seed: "src"),
+                src: ExternalAddress.mock(seed: "src"),
                 dest: Address.mock(workchain: 0, seed: "dest"),
                 importFee: Coins(0)
             )

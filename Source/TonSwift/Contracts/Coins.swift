@@ -1,3 +1,9 @@
+//
+//  Coins.swift
+//
+//  Created by Sun on 2023/3/13.
+//
+
 import BigInt
 import Foundation
 
@@ -5,8 +11,12 @@ import Foundation
 
 /// 128-bit integer representing base TON currency: toncoins (aka `grams` in block.tlb).
 public struct Coins {
+    // MARK: Properties
+
     var amount: BigUInt
-    
+
+    // MARK: Lifecycle
+
     init(_ a: some BinaryInteger) {
         // we use signed integer here because of `0` literal is a signed Int.
         amount = BigUInt(a)
@@ -35,7 +45,7 @@ extension Coins: CellCodable {
     }
 
     public static func loadFrom(slice: Slice) throws -> Coins {
-        Coins(try slice.loadVarUintBig(limit: 16))
+        try Coins(slice.loadVarUintBig(limit: 16))
     }
 }
 
@@ -60,7 +70,6 @@ extension Slice {
 }
 
 extension Builder {
-    
     /// Write coins amount in varuint format
     @discardableResult
     func store(coins: Coins) throws -> Self {
@@ -80,5 +89,4 @@ extension Builder {
         }
         return self
     }
-
 }

@@ -1,15 +1,18 @@
 //
 //  PrivateKey.swift
 //
-//
-//  Created by Grigory on 22.6.23..
+//  Created by Sun on 2023/6/22.
 //
 
 import Foundation
 
 public struct PrivateKey: Key, Equatable, Codable {
+    // MARK: Properties
+
     public let data: Data
-    
+
+    // MARK: Lifecycle
+
     public init(data: Data) {
         self.data = data
     }

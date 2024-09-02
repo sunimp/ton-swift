@@ -1,3 +1,9 @@
+//
+//  WalletV2.swift
+//
+//  Created by Sun on 2023/3/25.
+//
+
 import BigInt
 import Foundation
 import TweetNacl
@@ -5,17 +11,22 @@ import TweetNacl
 // MARK: - WalletContractV2Revision
 
 public enum WalletContractV2Revision {
-    case r1, r2
+    case r1
+    case r2
 }
 
 // MARK: - WalletV2
 
 public final class WalletV2: WalletContract {
+    // MARK: Properties
+
     public let workchain: Int8
     public let stateInit: StateInit
     public let publicKey: Data
     public let revision: WalletContractV2Revision
-    
+
+    // MARK: Lifecycle
+
     public init(workchain: Int8, publicKey: Data, revision: WalletContractV2Revision) throws {
         self.workchain = workchain
         self.publicKey = publicKey
@@ -34,9 +45,11 @@ public final class WalletV2: WalletContract {
         let data = try Builder().store(uint: UInt64(0), bits: 32) // Seqno
         try data.store(data: publicKey)
         
-        stateInit = StateInit(code: cell, data: try data.endCell())
+        stateInit = try StateInit(code: cell, data: data.endCell())
     }
-    
+
+    // MARK: Functions
+
     public func createTransfer(args: WalletTransferData, messageType _: MessageType = .ext) throws -> WalletTransfer {
         guard args.messages.count <= 4 else {
             throw TonError.custom("Maximum number of messages in a single transfer is 4")
@@ -48,7 +61,7 @@ public final class WalletV2: WalletContract {
         
         for message in args.messages {
             try signingMessage.store(uint: UInt64(args.sendMode.rawValue), bits: 8)
-            try signingMessage.store(ref: try Builder().store(message))
+            try signingMessage.store(ref: Builder().store(message))
         }
         
         return WalletTransfer(signingMessage: signingMessage, signaturePosition: .front)

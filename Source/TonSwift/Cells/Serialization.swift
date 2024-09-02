@@ -1,3 +1,9 @@
+//
+//  Serialization.swift
+//
+//  Created by Sun on 2023/3/13.
+//
+
 import Foundation
 
 // MARK: - CellCodable
@@ -19,7 +25,8 @@ public protocol StaticSize {
 // MARK: - TypeCoder
 
 /// Every type that can be used as a dictionary value has an accompanying coder object configured to read that type.
-/// This protocol allows implement dependent types because the exact instance would have runtime parameter such as bitlength for the values of this type.
+/// This protocol allows implement dependent types because the exact instance would have runtime parameter such as
+/// bitlength for the values of this type.
 public protocol TypeCoder {
     associatedtype T
     func storeValue(_ src: T, to builder: Builder) throws
@@ -35,7 +42,12 @@ extension CellCodable {
 // MARK: - DefaultCoder
 
 public class DefaultCoder<X: CellCodable>: TypeCoder {
+    // MARK: Nested Types
+
     public typealias T = X
+
+    // MARK: Functions
+
     public func storeValue(_ src: T, to builder: Builder) throws {
         try src.storeTo(builder: builder)
     }
@@ -54,17 +66,25 @@ extension TypeCoder {
     }
 }
 
-
 // MARK: - BytesCoder
 
 public class BytesCoder: TypeCoder {
+    // MARK: Nested Types
+
     public typealias T = Data
+
+    // MARK: Properties
+
     let size: Int
-    
+
+    // MARK: Lifecycle
+
     init(size: Int) {
         self.size = size
     }
-    
+
+    // MARK: Functions
+
     public func storeValue(_ src: T, to builder: Builder) throws {
         try builder.store(data: src)
     }
@@ -117,9 +137,13 @@ extension Builder: CellCodable {
 
 /// Empty struct to store empty leafs in the dictionaries to form sets.
 public struct Empty: CellCodable {
+    // MARK: Static Functions
+
     public static func loadFrom(slice _: Slice) throws -> Self {
         Empty()
     }
+
+    // MARK: Functions
 
     public func storeTo(builder _: Builder) throws {
         // store nothing

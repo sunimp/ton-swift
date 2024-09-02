@@ -1,3 +1,9 @@
+//
+//  Message.swift
+//
+//  Created by Sun on 2023/3/18.
+//
+
 import Foundation
 
 // Source: https://github.com/ton-blockchain/ton/blob/24dc184a2ea67f9c47042b4104bbb4d82289fac1/crypto/block/block.tlb#L147
@@ -6,19 +12,23 @@ import Foundation
 //                   body:(Either X ^X) = Message X;
 
 public struct Message: CellCodable {
+    // MARK: Properties
+
     public let info: CommonMsgInfo
     public let stateInit: StateInit?
     public let body: Cell
-    
+
+    // MARK: Static Functions
+
     public static func loadFrom(slice: Slice) throws -> Message {
         let info = try CommonMsgInfo.loadFrom(slice: slice)
         
         var stateInit: StateInit? = nil
         if try slice.loadBoolean() {
-            if !(try slice.loadBoolean()) {
+            if try !(slice.loadBoolean()) {
                 stateInit = try StateInit.loadFrom(slice: slice)
             } else {
-                stateInit = try StateInit.loadFrom(slice: try slice.loadRef().beginParse())
+                stateInit = try StateInit.loadFrom(slice: slice.loadRef().beginParse())
             }
         }
         
@@ -32,6 +42,22 @@ public struct Message: CellCodable {
         return Message(info: info, stateInit: stateInit, body: body)
     }
     
+    public static func external(to: Address, stateInit: StateInit?, body: Cell = .empty) -> Message {
+        Message(
+            info: .externalInInfo(
+                info: CommonMsgInfoExternalIn(
+                    src: nil,
+                    dest: to,
+                    importFee: Coins(0)
+                )
+            ),
+            stateInit: stateInit,
+            body: body
+        )
+    }
+    
+    // MARK: Functions
+
     public func storeTo(builder: Builder) throws {
         try builder.store(info)
         
@@ -59,19 +85,4 @@ public struct Message: CellCodable {
             try builder.store(ref: body)
         }
     }
-    
-    public static func external(to: Address, stateInit: StateInit?, body: Cell = .empty) -> Message {
-        Message(
-            info: .externalInInfo(
-                info: CommonMsgInfoExternalIn(
-                    src: nil,
-                    dest: to,
-                    importFee: Coins(0)
-                )
-            ),
-            stateInit: stateInit,
-            body: body
-        )
-    }
-    
 }

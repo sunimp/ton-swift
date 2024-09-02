@@ -1,8 +1,13 @@
-import XCTest
+//
+//  CellTest.swift
+//
+//  Created by Sun on 2023/2/1.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class CellTest: XCTestCase {
-    
     func testCell() throws {
         // should construct
         let cell = Cell()

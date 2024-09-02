@@ -1,20 +1,31 @@
+//
+//  Bitstring.swift
+//
+//  Created by Sun on 2023/1/19.
+//
+
 import Foundation
-
-
 
 // MARK: - Bitstring
 
 public struct Bitstring: Hashable {
-    
+    // MARK: Static Properties
+
     public static let empty = Bitstring(data: .init(), unchecked: (offset: 0, length: 0))
-    
+
+    // MARK: Properties
+
     private let _offset: Int
     private let _length: Int
     private let _data: Data
-    
+
+    // MARK: Computed Properties
+
     /// The length of the bitstring in bits
     public var length: Int { _length }
-    
+
+    // MARK: Lifecycle
+
     /// Constructs an empty bitstring
     public init() {
         _data = Data()
@@ -61,7 +72,8 @@ public struct Bitstring: Hashable {
         let cell = try Builder().store(binaryString: binaryString).endCell()
         self = cell.bits
     }
-    
+
+    // MARK: Functions
 
     /// Returns the bit at the specified index
     ///
@@ -74,15 +86,6 @@ public struct Bitstring: Hashable {
         }
         
         return at(unchecked: index)
-    }
-    
-    /// Performs access to a bit at a given index without checking bounds.
-    /// Use only in the internal implementation.
-    func at(unchecked index: Int) -> Bit {
-        let byteIndex = (_offset + index) >> 3
-        let bitIndex = 7 - ((_offset + index) % 8) // NOTE: We are using big endian
-        
-        return (_data[byteIndex] & (1 << bitIndex)) != 0 ? 1 : 0
     }
     
     /// Returns `.some(bit)` if the string is empty of consists of a repeating bit.
@@ -150,7 +153,8 @@ public struct Bitstring: Hashable {
         try substring(offset: n, length: length - n)
     }
     
-    /// Formats the bitstring as a hex-encoded string with a `_` trailing symbol indicating `10*` padding to 4-bit alignment.
+    /// Formats the bitstring as a hex-encoded string with a `_` trailing symbol indicating `10*` padding to 4-bit
+    /// alignment.
     public func toHex() -> String {
         let padded = Data(bitsToPaddedBuffer())
         
@@ -180,15 +184,10 @@ public struct Bitstring: Hashable {
         return s
     }
     
-    /// Formats the bitstring as a hex-encoded string with a `_` trailing symbol indicating `10*` padding to 4-bit alignment.
+    /// Formats the bitstring as a hex-encoded string with a `_` trailing symbol indicating `10*` padding to 4-bit
+    /// alignment.
     public func toString() -> String {
         toHex()
-    }
-    
-    private func checkOffset(offset: Int, length: Int) throws {
-        if offset >= _length || offset < 0 || offset + length > _length {
-            throw TonError.offsetOutOfBounds(offset)
-        }
     }
     
     public func padLeft(_ n: Int = 0) -> Bitstring {
@@ -215,6 +214,21 @@ public struct Bitstring: Hashable {
         
         return try! builder.alignedBitstring() // we guarantee alignment in this method
     }
+
+    /// Performs access to a bit at a given index without checking bounds.
+    /// Use only in the internal implementation.
+    func at(unchecked index: Int) -> Bit {
+        let byteIndex = (_offset + index) >> 3
+        let bitIndex = 7 - ((_offset + index) % 8) // NOTE: We are using big endian
+        
+        return (_data[byteIndex] & (1 << bitIndex)) != 0 ? 1 : 0
+    }
+
+    private func checkOffset(offset: Int, length: Int) throws {
+        if offset >= _length || offset < 0 || offset + length > _length {
+            throw TonError.offsetOutOfBounds(offset)
+        }
+    }
 }
 
 // MARK: Comparable
@@ -225,8 +239,12 @@ extension Bitstring: Comparable {
         for i in 0 ..< min(lhs.length, rhs.length) {
             let l = lhs.at(unchecked: i)
             let r = rhs.at(unchecked: i)
-            if l == 0, r == 1 { return true }
-            if l == 1, r == 0 { return false }
+            if l == 0, r == 1 {
+                return true
+            }
+            if l == 1, r == 0 {
+                return false
+            }
         }
         return lhs.length <= rhs.length // shorter string comes first, tie is in favor of the LHS
     }
@@ -235,7 +253,6 @@ extension Bitstring: Comparable {
 // MARK: Equatable
 
 extension Bitstring: Equatable {
-    
     /// Checks for equality
     /// - parameter lhs: bitstring
     /// - parameter rhs: bitstring
@@ -269,6 +286,6 @@ extension Data {
     }
     
     public func hexString() -> String {
-        map({ String(format: "%02hhx", $0) }).joined()
+        map { String(format: "%02hhx", $0) }.joined()
     }
 }

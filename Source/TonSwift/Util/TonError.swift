@@ -1,3 +1,9 @@
+//
+//  TonError.swift
+//
+//  Created by Sun on 2023/1/28.
+//
+
 import Foundation
 
 // MARK: - TonError
@@ -14,16 +20,16 @@ public enum TonError: Error, Equatable {
 extension TonError: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
-        case .indexOutOfBounds(let index):
+        case let .indexOutOfBounds(index):
             "Index \(index) is out of bounds"
             
-        case .offsetOutOfBounds(let offset):
+        case let .offsetOutOfBounds(offset):
             "Offset \(offset) is out of bounds"
         
-        case .varUIntOutOfBounds(let limit, let actualBits):
+        case let .varUIntOutOfBounds(limit, actualBits):
             "VarUInteger is out of bounds: the (VarUInt \(limit)) specifies max size \((limit - 1) * 8) bits long, but the actual number is \(actualBits) bits long"
             
-        case .custom(let text):
+        case let .custom(text):
             text
         }
     }

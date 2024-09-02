@@ -1,8 +1,7 @@
 //
 //  PublicKey.swift
 //
-//
-//  Created by Grigory on 22.6.23..
+//  Created by Sun on 2023/6/22.
 //
 
 import Foundation
@@ -10,8 +9,12 @@ import Foundation
 // MARK: - PublicKey
 
 public struct PublicKey: Key, Codable {
+    // MARK: Properties
+
     public let data: Data
-    
+
+    // MARK: Lifecycle
+
     public init(data: Data) {
         self.data = data
     }

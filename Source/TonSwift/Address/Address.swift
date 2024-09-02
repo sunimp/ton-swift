@@ -1,17 +1,29 @@
+//
+//  Address.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 import Foundation
 
 // MARK: - Address
 
 public struct Address: Hashable, Codable {
+    // MARK: Properties
+
     public let workchain: Int8
     public let hash: Data
-    
+
+    // MARK: Lifecycle
+
     /// Initializes address from raw components.
     public init(workchain: Int8, hash: Data) {
         self.workchain = workchain
         self.hash = hash
     }
-    
+
+    // MARK: Static Functions
+
     /// Generates a test address
     public static func mock(workchain: Int8, seed: String) -> Self {
         Address(workchain: workchain, hash: Data(seed.utf8).sha256())
@@ -40,6 +52,8 @@ public struct Address: Hashable, Codable {
         }
         return Address(workchain: wc, hash: hash)
     }
+
+    // MARK: Functions
 
     /// Returns raw format of the address: `<workchain>:<hash>` (decimal workchain, hex-encoded hash part)
     public func toRaw() -> String {
@@ -83,7 +97,6 @@ extension Address: Equatable {
 ///             address:(bits addr_len)            = MsgAddressInt;
 /// ```
 extension Address: CellCodable, StaticSize {
-    
     public static var bitWidth = 267
     
     public func storeTo(builder b: Builder) throws {
@@ -107,7 +120,7 @@ extension Address: CellCodable, StaticSize {
             }
 
             // Read address
-            let wc = Int8(try s.loadInt(bits: 8))
+            let wc = try Int8(s.loadInt(bits: 8))
             let hash = try s.loadBytes(32)
 
             return Address(workchain: wc, hash: hash)
@@ -119,24 +132,34 @@ extension Address: CellCodable, StaticSize {
 
 /// The most compact address encoding that's often used within smart contracts: workchain + hash.
 public struct CompactAddress: Hashable, CellCodable, StaticSize {
+    // MARK: Static Properties
+
     public static var bitWidth = 8 + 256
+
+    // MARK: Properties
+
     public let inner: Address
-    
+
+    // MARK: Lifecycle
+
     init(_ inner: Address) {
         self.inner = inner
     }
-    
-    public func storeTo(builder b: Builder) throws {
-        try b.store(int: inner.workchain, bits: 8)
-        try b.store(data: inner.hash)
-    }
-    
+
+    // MARK: Static Functions
+
     public static func loadFrom(slice: Slice) throws -> CompactAddress {
         try slice.tryLoad { s in
-            let wc = Int8(try s.loadInt(bits: 8))
+            let wc = try Int8(s.loadInt(bits: 8))
             let hash = try s.loadBytes(32)
             return CompactAddress(Address(workchain: wc, hash: hash))
         }
     }
-}
 
+    // MARK: Functions
+
+    public func storeTo(builder b: Builder) throws {
+        try b.store(int: inner.workchain, bits: 8)
+        try b.store(data: inner.hash)
+    }
+}

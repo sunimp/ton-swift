@@ -1,3 +1,9 @@
+//
+//  ExternalAddress.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 import Foundation
 
 // MARK: - ExternalAddress
@@ -7,19 +13,27 @@ import Foundation
 /// addr_extern$01 len:(## 9) external_address:(bits len) = MsgAddressExt;
 /// ```
 public struct ExternalAddress {
+    // MARK: Properties
+
     private(set) var value: Bitstring
+
+    // MARK: Lifecycle
 
     public init(value: Bitstring) {
         self.value = value
     }
 
-    public func toString() -> String {
-        "External<\(value.length):\(value.toString())>"
-    }
-    
+    // MARK: Static Functions
+
     public static func mock(seed: String) throws -> Self {
         let value = Bitstring(data: Data(seed.utf8).sha256())
         return ExternalAddress(value: value)
+    }
+
+    // MARK: Functions
+
+    public func toString() -> String {
+        "External<\(value.length):\(value.toString())>"
     }
 }
 
@@ -39,7 +53,7 @@ extension ExternalAddress: CellCodable {
                 throw TonError.custom("Invalid ExternalAddress")
             }
             
-            let bits = Int(try s.loadUint(bits: 9))
+            let bits = try Int(s.loadUint(bits: 9))
             let data = try s.loadBits(bits)
             
             return ExternalAddress(value: data)

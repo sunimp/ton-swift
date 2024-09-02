@@ -1,8 +1,13 @@
-import XCTest
+//
+//  BitStringTest.swift
+//
+//  Created by Sun on 2023/2/1.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class BitStringTest: XCTestCase {
-
     func testBitString() throws {
         // should read bits
         let bs = Bitstring(data: Data([0b10101010]), unchecked: (offset: 0, length: 8))

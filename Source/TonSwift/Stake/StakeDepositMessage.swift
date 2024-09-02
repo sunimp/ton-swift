@@ -1,61 +1,70 @@
+//
+//  StakeDepositMessage.swift
+//
+//  Created by Sun on 2024/7/25.
+//
+
 import BigInt
 import Foundation
 
 public enum StakeDepositMessage {
     public static func whalesInternalMessage(
-        queryId: BigUInt,
+        queryID: BigUInt,
         poolAddress: Address,
         amount: BigUInt,
         forwardAmount: BigUInt,
         bounce: Bool = true
-    ) throws -> MessageRelaxed {
+    ) throws
+        -> MessageRelaxed {
         let body = Builder()
         try body.store(uint: OpCodes.WHALES_DEPOSIT, bits: 32)
-        try body.store(uint: queryId, bits: 64)
+        try body.store(uint: queryID, bits: 64)
         try body.store(coins: Coins(forwardAmount.magnitude))
     
-        return MessageRelaxed.internal(
+        return try MessageRelaxed.internal(
             to: poolAddress,
             value: amount,
             bounce: bounce,
-            body: try body.asCell()
+            body: body.asCell()
         )
     }
   
     public static func liquidTFInternalMessage(
-        queryId: BigUInt,
+        queryID: BigUInt,
         poolAddress: Address,
         amount: BigUInt,
         bounce: Bool = true
-    ) throws -> MessageRelaxed {
+    ) throws
+        -> MessageRelaxed {
         let body = Builder()
         try body.store(uint: OpCodes.LIQUID_TF_DEPOSIT, bits: 32)
-        try body.store(uint: queryId, bits: 64)
-        try body.store(uint: 0x000000000005b7ce, bits: 64)
+        try body.store(uint: queryID, bits: 64)
+        try body.store(uint: 0x000000000005B7CE, bits: 64)
     
-        return MessageRelaxed.internal(
+        return try MessageRelaxed.internal(
             to: poolAddress,
             value: amount,
             bounce: bounce,
-            body: try body.asCell()
+            body: body.asCell()
         )
     }
   
     public static func tfInternalMessage(
-        queryId _: BigUInt,
+        queryID _: BigUInt,
         poolAddress: Address,
         amount: BigUInt,
         bounce: Bool = true
-    ) throws -> MessageRelaxed {
+    ) throws
+        -> MessageRelaxed {
         let body = Builder()
         try body.store(uint: 0, bits: 32)
         try body.writeSnakeData(Data("d".utf8))
     
-        return MessageRelaxed.internal(
+        return try MessageRelaxed.internal(
             to: poolAddress,
             value: amount,
             bounce: bounce,
-            body: try body.asCell()
+            body: body.asCell()
         )
     }
 }

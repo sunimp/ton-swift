@@ -1,14 +1,26 @@
+//
+//  pbkdf2Sha512.swift
+//
+//  Created by Sun on 2023/4/2.
+//
+
 import CommonCrypto
 import Foundation
 
 public let pbkdf2Sha512Iterations = 100000
 
-public func pbkdf2Sha512(phrase: Data, salt: Data, iterations: Int = pbkdf2Sha512Iterations, keyLength: Int = 64) -> [UInt8] {
+public func pbkdf2Sha512(
+    phrase: Data,
+    salt: Data,
+    iterations: Int = pbkdf2Sha512Iterations,
+    keyLength: Int = 64
+)
+    -> [UInt8] {
     var bytes = [UInt8](repeating: 0, count: keyLength)
     _ = bytes.withUnsafeMutableBytes { (outputBytes: UnsafeMutableRawBufferPointer) in
         CCKeyDerivationPBKDF(
             CCPBKDFAlgorithm(kCCPBKDF2),
-            phrase.map({ Int8(bitPattern: $0) }),
+            phrase.map { Int8(bitPattern: $0) },
             phrase.count,
             [UInt8](salt),
             salt.count,

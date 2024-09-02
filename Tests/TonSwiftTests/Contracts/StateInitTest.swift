@@ -1,16 +1,21 @@
-import XCTest
+//
+//  StateInitTest.swift
+//
+//  Created by Sun on 2023/3/3.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class StateInitTest: XCTestCase {
-
     func testStateInit() throws {
         // shoild serialize to match golden-1
         
         // Serialize
         let boc = try Builder()
             .store(StateInit(
-                code: try Builder().store(uint: 1, bits: 8).endCell(),
-                data: try Builder().store(uint: 2, bits: 8).endCell()
+                code: Builder().store(uint: 1, bits: 8).endCell(),
+                data: Builder().store(uint: 2, bits: 8).endCell()
             ))
             .endCell()
             .toBoc(idx: false, crc32: true)

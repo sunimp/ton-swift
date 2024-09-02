@@ -1,9 +1,14 @@
+//
+//  BitBuilderTest.swift
+//
+//  Created by Sun on 2023/2/1.
+//
+
 import BigInt
-import XCTest
 @testable import TonSwift
+import XCTest
 
 final class BitBuilderTest: XCTestCase {
-    
     func testBitBuilder() throws {
         // should serialize uint
         try testWriteUint()
@@ -11,7 +16,7 @@ final class BitBuilderTest: XCTestCase {
         try testWriteCoins()
         try testWriteAddress()
     }
-    
+
     private func testWriteUint() throws {
         let cases: [(UInt64, Int, String)] = [
             (10290, 29, "00014194_"),

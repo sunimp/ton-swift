@@ -1,21 +1,30 @@
+//
+//  WalletContractV3Test.swift
+//
+//  Created by Sun on 2023/3/27.
+//
+
 import BigInt
+@testable import TonSwift
 import TweetNacl
 import XCTest
-@testable import TonSwift
 
 final class WalletContractV3Test: XCTestCase {
-    
+    // MARK: Properties
+
     private let publicKey = Data(hex: "5754865e86d0ade1199301bbb0319a25ed6b129c4b0a57f28f62449b3df9c522")!
     private let secretKey =
         Data(
             hex: "34aebb9ea454967f16c407c0f8877763e86212116468169d93a3dcbcafe530c95754865e86d0ade1199301bbb0319a25ed6b129c4b0a57f28f62449b3df9c522"
         )!
-    
+
+    // MARK: Functions
+
     func testWalletContractV3() throws {
         try testR1()
         try testR2()
     }
-    
+
     private func testR1() throws {
         let contractR1 = try WalletV3(workchain: 0, publicKey: publicKey, revision: .r1)
         
@@ -29,7 +38,7 @@ final class WalletContractV3Test: XCTestCase {
             "x{FF0020DD2082014C97BA9730ED44D0D70B1FE0A4F2608308D71820D31FD31FD31FF82313BBF263ED44D0D31FD31FD3FFD15132BAF2A15144BAF2A204F901541055F910F2A3F8009320D74A96D307D402FB00E8D101A4C8CB1FCB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR1.createTransfer(args: try args())
+        let transfer = try contractR1.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(try cell.toString(), """
@@ -50,7 +59,7 @@ final class WalletContractV3Test: XCTestCase {
             "x{FF0020DD2082014C97BA218201339CBAB19F71B0ED44D0D31FD31F31D70BFFE304E0A4F2608308D71820D31FD31FD31FF82313BBF263ED44D0D31FD31FD3FFD15132BAF2A15144BAF2A204F901541055F910F2A3F8009320D74A96D307D402FB00E8D101A4C8CB1FCB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR2.createTransfer(args: try args())
+        let transfer = try contractR2.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(try cell.toString(), """

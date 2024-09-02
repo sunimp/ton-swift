@@ -1,8 +1,13 @@
-import XCTest
+//
+//  MnemonicTest.swift
+//
+//  Created by Sun on 2023/4/2.
+//
+
 @testable import TonSwift
+import XCTest
 
 final class MnemonicTest: XCTestCase {
-    
     func testMnemonic() throws {
         let mnemonic = Mnemonic.mnemonicNew()
         XCTAssertTrue(Mnemonic.mnemonicValidate(mnemonicArray: mnemonic))
@@ -24,5 +29,4 @@ final class MnemonicTest: XCTestCase {
             "c893fc0b676782a5c157ad8fddb389f75caba6eea1c198d8075a8a43afce70a934eb4b67d64f74d989ce2bc2e3dfddb7ed4cb0eec92f29fbecd05b1eabab0254"
         )
     }
-    
 }

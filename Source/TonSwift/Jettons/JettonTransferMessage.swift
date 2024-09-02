@@ -1,8 +1,7 @@
 //
 //  JettonTransferMessage.swift
 //
-//
-//  Created by Grigory on 11.7.23..
+//  Created by Sun on 2023/7/12.
 //
 
 import BigInt
@@ -18,10 +17,11 @@ public enum JettonTransferMessage {
         comment: String? = nil,
         customPayload: Cell? = nil,
         stateInit: StateInit? = nil
-    ) throws -> MessageRelaxed {
+    ) throws
+        -> MessageRelaxed {
         let forwardAmount = BigUInt(stringLiteral: "1")
         let jettonTransferAmount = BigUInt(stringLiteral: "640000000")
-        let queryId = UInt64(Date().timeIntervalSince1970)
+        let queryID = UInt64(Date().timeIntervalSince1970)
       
         var commentCell: Cell?
         if let comment {
@@ -29,7 +29,7 @@ public enum JettonTransferMessage {
         }
         
         let jettonTransferData = JettonTransferData(
-            queryId: queryId,
+            queryID: queryID,
             amount: amount.magnitude,
             toAddress: to,
             responseAddress: from,
@@ -38,12 +38,12 @@ public enum JettonTransferMessage {
             customPayload: customPayload
         )
         
-        return MessageRelaxed.internal(
+        return try MessageRelaxed.internal(
             to: jettonAddress,
             value: jettonTransferAmount,
             bounce: bounce,
             stateInit: stateInit,
-            body: try Builder().store(jettonTransferData).endCell()
+            body: Builder().store(jettonTransferData).endCell()
         )
     }
 }

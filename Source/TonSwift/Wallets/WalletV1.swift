@@ -1,3 +1,9 @@
+//
+//  WalletV1.swift
+//
+//  Created by Sun on 2023/3/25.
+//
+
 import BigInt
 import Foundation
 import TweetNacl
@@ -5,17 +11,23 @@ import TweetNacl
 // MARK: - WalletContractV1Revision
 
 public enum WalletContractV1Revision {
-    case r1, r2, r3
+    case r1
+    case r2
+    case r3
 }
 
 // MARK: - WalletV1
 
 public final class WalletV1: WalletContract {
+    // MARK: Properties
+
     public let workchain: Int8
     public let stateInit: StateInit
     public let publicKey: Data
     public let revision: WalletContractV1Revision
-    
+
+    // MARK: Lifecycle
+
     public init(workchain: Int8, publicKey: Data, revision: WalletContractV1Revision) throws {
         self.workchain = workchain
         self.publicKey = publicKey
@@ -37,15 +49,17 @@ public final class WalletV1: WalletContract {
         let data = try Builder().store(uint: UInt64(0), bits: 32) // Seqno
         try data.store(data: publicKey)
         
-        stateInit = StateInit(code: cell, data: try data.endCell())
+        stateInit = try StateInit(code: cell, data: data.endCell())
     }
-    
+
+    // MARK: Functions
+
     public func createTransfer(args: WalletTransferData, messageType _: MessageType = .ext) throws -> WalletTransfer {
         let signingMessage = try Builder().store(uint: args.seqno, bits: 32)
         
         if let message = args.messages.first {
             try signingMessage.store(uint: UInt64(args.sendMode.rawValue), bits: 8)
-            try signingMessage.store(ref: try Builder().store(message))
+            try signingMessage.store(ref: Builder().store(message))
         }
         
         return WalletTransfer(signingMessage: signingMessage, signaturePosition: .front)

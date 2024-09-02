@@ -1,3 +1,9 @@
+//
+//  MessageRelaxed.swift
+//
+//  Created by Sun on 2023/3/18.
+//
+
 import BigInt
 import Foundation
 
@@ -7,19 +13,23 @@ import Foundation
 //                   body:(Either X ^X) = MessageRelaxed X;
 
 public struct MessageRelaxed: CellCodable {
+    // MARK: Properties
+
     public let info: CommonMsgInfoRelaxed
     public let stateInit: StateInit?
     public let body: Cell
-    
+
+    // MARK: Static Functions
+
     public static func loadFrom(slice: Slice) throws -> MessageRelaxed {
         let info = try CommonMsgInfoRelaxed.loadFrom(slice: slice)
             
         var stateInit: StateInit? = nil
         if try slice.loadBoolean() {
-            if !(try slice.loadBoolean()) {
+            if try !(slice.loadBoolean()) {
                 stateInit = try StateInit.loadFrom(slice: slice)
             } else {
-                stateInit = try StateInit.loadFrom(slice: try slice.loadRef().beginParse())
+                stateInit = try StateInit.loadFrom(slice: slice.loadRef().beginParse())
             }
         }
         
@@ -33,41 +43,14 @@ public struct MessageRelaxed: CellCodable {
         return MessageRelaxed(info: info, stateInit: stateInit, body: body)
     }
     
-    public func storeTo(builder: Builder) throws {
-        try builder.store(info)
-        
-        if let stateInit {
-            try builder.store(bit: 2)
-            let initCell = try Builder().store(stateInit)
-            
-            // check if we fit the cell inline with 2 bits for the stateinit and the body
-            if let space = builder.fit(initCell.metrics), space.bitsCount >= 2 {
-                try builder.store(bit: 0)
-                try builder.store(initCell)
-            } else {
-                try builder.store(bit: 1)
-                try builder.store(ref: initCell)
-            }
-        } else {
-            try builder.store(bit: 0)
-        }
-        
-        if let space = builder.fit(body.metrics), space.bitsCount >= 1 {
-            try builder.store(bit: 0)
-            try builder.store(body.toBuilder())
-        } else {
-            try builder.store(bit: 1)
-            try builder.store(ref: body)
-        }
-    }
-    
     public static func `internal`(
         to: Address,
         value: BigUInt,
         bounce: Bool = true,
         stateInit: StateInit? = nil,
         body: Cell = .empty
-    ) -> MessageRelaxed {
+    )
+        -> MessageRelaxed {
         MessageRelaxed(
             info: .internalInfo(
                 info:
@@ -95,7 +78,8 @@ public struct MessageRelaxed: CellCodable {
         bounce: Bool = true,
         stateInit: StateInit? = nil,
         textPayload: String
-    ) throws -> MessageRelaxed {
+    ) throws
+        -> MessageRelaxed {
         let body: Cell =
             if textPayload.isEmpty {
                 .empty
@@ -103,5 +87,35 @@ public struct MessageRelaxed: CellCodable {
                 try Builder().store(int: 0, bits: 32).writeSnakeData(Data(textPayload.utf8)).endCell()
             }
         return .internal(to: to, value: value, bounce: bounce, stateInit: stateInit, body: body)
+    }
+
+    // MARK: Functions
+
+    public func storeTo(builder: Builder) throws {
+        try builder.store(info)
+        
+        if let stateInit {
+            try builder.store(bit: 2)
+            let initCell = try Builder().store(stateInit)
+            
+            // check if we fit the cell inline with 2 bits for the stateinit and the body
+            if let space = builder.fit(initCell.metrics), space.bitsCount >= 2 {
+                try builder.store(bit: 0)
+                try builder.store(initCell)
+            } else {
+                try builder.store(bit: 1)
+                try builder.store(ref: initCell)
+            }
+        } else {
+            try builder.store(bit: 0)
+        }
+        
+        if let space = builder.fit(body.metrics), space.bitsCount >= 1 {
+            try builder.store(bit: 0)
+            try builder.store(body.toBuilder())
+        } else {
+            try builder.store(bit: 1)
+            try builder.store(ref: body)
+        }
     }
 }

@@ -1,16 +1,25 @@
+//
+//  WalletContractV1Test.swift
+//
+//  Created by Sun on 2023/3/25.
+//
+
 import BigInt
+@testable import TonSwift
 import TweetNacl
 import XCTest
-@testable import TonSwift
 
 final class WalletContractV1Test: XCTestCase {
-    
+    // MARK: Properties
+
     private let publicKey = Data(hex: "5754865e86d0ade1199301bbb0319a25ed6b129c4b0a57f28f62449b3df9c522")!
     private let secretKey =
         Data(
             hex: "34aebb9ea454967f16c407c0f8877763e86212116468169d93a3dcbcafe530c95754865e86d0ade1199301bbb0319a25ed6b129c4b0a57f28f62449b3df9c522"
         )!
-    
+
+    // MARK: Functions
+
     func testR1() throws {
         let contractR1 = try WalletV1(workchain: 0, publicKey: publicKey, revision: .r1)
         
@@ -24,7 +33,7 @@ final class WalletContractV1Test: XCTestCase {
             "x{FF0020DDA4F260810200D71820D70B1FED44D0D31FD3FFD15112BAF2A122F901541044F910F2A2F80001D31F3120D74A96D307D402FB00DED1A4C8CB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR1.createTransfer(args: try args())
+        let transfer = try contractR1.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(
@@ -46,7 +55,7 @@ final class WalletContractV1Test: XCTestCase {
             "x{FF0020DD2082014C97BA9730ED44D0D70B1FE0A4F260810200D71820D70B1FED44D0D31FD3FFD15112BAF2A122F901541044F910F2A2F80001D31F3120D74A96D307D402FB00DED1A4C8CB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR2.createTransfer(args: try args())
+        let transfer = try contractR2.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(
@@ -68,7 +77,7 @@ final class WalletContractV1Test: XCTestCase {
             "x{FF0020DD2082014C97BA218201339CBAB19C71B0ED44D0D31FD70BFFE304E0A4F260810200D71820D70B1FED44D0D31FD3FFD15112BAF2A122F901541044F910F2A2F80001D31F3120D74A96D307D402FB00DED1A4C8CB1FCBFFC9ED54}"
         )
         
-        let transfer = try contractR3.createTransfer(args: try args())
+        let transfer = try contractR3.createTransfer(args: args())
         let signedData = try transfer.signMessage(signer: WalletTransferSecretKeySigner(secretKey: secretKey))
         let cell = try Cell(data: signedData)
         XCTAssertEqual(
@@ -76,7 +85,7 @@ final class WalletContractV1Test: XCTestCase {
             "x{44811DCDDFD331B4CF82F2AE62532E0EDCA1976BDF50B48E6EC3E108347CBB47DDDFCCB4A8980F3AED4417084B62268F8F19CCCD3940835DE54C515172295703}"
         )
     }
-    
+
     private func args() throws -> WalletTransferData {
         try WalletTransferData(
             seqno: 62,
